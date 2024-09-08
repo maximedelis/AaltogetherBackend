@@ -1,6 +1,5 @@
 package www.aaltogetherbackend.services;
 
-
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
