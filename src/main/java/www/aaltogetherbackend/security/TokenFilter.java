@@ -22,7 +22,7 @@ public class TokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (!path.startsWith("/api/")) {
+        if (path.startsWith("/api/auth") || path.startsWith("/h2-console")) {
             filterChain.doFilter(request, response);
             return;
         }
