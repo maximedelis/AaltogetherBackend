@@ -1,19 +1,14 @@
 package www.aaltogetherbackend.payloads.responses;
 
 public class ErrorMessageResponse {
-    private final String message;
-    private final String field;
+    private final String error;
 
-    public ErrorMessageResponse(String message, String field) {
-        this.message = message;
-        this.field = field;
+    public ErrorMessageResponse(String error) {
+        this.error = error;
     }
 
-    public String getMessage() {
-        return message;
+    public String getError() {
+        return error;
     }
 
-    public String getField() {
-        return field;
-    }
 }

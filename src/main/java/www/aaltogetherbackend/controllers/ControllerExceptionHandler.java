@@ -14,7 +14,11 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
         String message = Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
-        String field = ex.getBindingResult().getFieldError().getField();
-        return ResponseEntity.badRequest().body(new ErrorMessageResponse(message, field));
+        return ResponseEntity.badRequest().body(new ErrorMessageResponse(message));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleExceptions(Exception ex) {
+        return ResponseEntity.badRequest().body(new ErrorMessageResponse(ex.getMessage()));
     }
 }
