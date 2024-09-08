@@ -40,7 +40,7 @@ public class WebSecurityConfig {
 
     @Bean
     public TokenFilter tokenFilter() {
-        return new TokenFilter(jwtUtils);
+        return new TokenFilter(jwtUtils, userDetailsService);
     }
 
     @Bean
