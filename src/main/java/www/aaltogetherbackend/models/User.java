@@ -78,4 +78,8 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
 }

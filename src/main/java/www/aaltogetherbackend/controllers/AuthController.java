@@ -38,25 +38,25 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-                        loginRequest.getPassword()));
+                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(),
+                        loginRequest.password()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateToken(loginRequest.getUsername());
+        String jwt = jwtUtils.generateToken(loginRequest.username());
         return ResponseEntity.ok().body(new MessageResponse("You've been signed in!", jwt));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
+        if (userRepository.existsByUsername(signupRequest.username())) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Username is already taken!"));
         }
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+        if (userRepository.existsByEmail(signupRequest.email())) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Email is already in use!"));
         }
         User user = new User();
-        user.setUsername(signupRequest.getUsername());
-        user.setPassword(encoder.encode(signupRequest.getPassword()));
-        user.setEmail(signupRequest.getEmail());
+        user.setUsername(signupRequest.username());
+        user.setPassword(encoder.encode(signupRequest.password()));
+        user.setEmail(signupRequest.email());
         userRepository.save(user);
         return ResponseEntity.ok().body(new MessageResponse("User registered successfully!"));
     }
