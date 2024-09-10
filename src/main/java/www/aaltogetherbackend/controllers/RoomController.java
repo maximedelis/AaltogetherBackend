@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.payloads.requests.CreateRoomRequest;
-import www.aaltogetherbackend.payloads.requests.JoinRoomRequest;
 import www.aaltogetherbackend.payloads.requests.UpdateRoomRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.services.RoomService;
@@ -39,10 +38,10 @@ public class RoomController {
             if (createRoomRequest.password() == null) {
                 return ResponseEntity.badRequest().body(new ErrorMessageResponse("Password is required for private rooms"));
             }
-            room.setPassword(createRoomRequest.password());
         }
+        room.setPassword(createRoomRequest.password());
         roomService.saveRoom(room);
-        return ResponseEntity.ok().body(room.getId());
+        return ResponseEntity.ok().body(room);
     }
 
     /* ACTUALLY USELESS
@@ -93,7 +92,7 @@ public class RoomController {
         room.setPassword(updateRoomRequest.password());
         roomService.saveRoom(room);
 
-        return ResponseEntity.ok().body(room.getId());
+        return ResponseEntity.ok().body(room);
     }
 
 }

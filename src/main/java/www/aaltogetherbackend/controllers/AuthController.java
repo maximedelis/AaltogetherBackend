@@ -15,6 +15,7 @@ import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.payloads.requests.LoginRequest;
 import www.aaltogetherbackend.payloads.requests.SignupRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
+import www.aaltogetherbackend.payloads.responses.LoginResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
 import www.aaltogetherbackend.repositories.UserRepository;
 import www.aaltogetherbackend.services.JwtUtils;
@@ -42,7 +43,7 @@ public class AuthController {
                         loginRequest.password()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateToken(loginRequest.username());
-        return ResponseEntity.ok().body(new MessageResponse("You've been signed in!", jwt));
+        return ResponseEntity.ok().body(new LoginResponse("You've been signed in!", jwt));
     }
 
     @PostMapping("/signup")

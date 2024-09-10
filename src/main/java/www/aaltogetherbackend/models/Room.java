@@ -18,6 +18,8 @@ public class Room {
 
     private String password;
 
+
+
     @ManyToOne
     @JoinColumn(name = "host_id")
     private User host;
