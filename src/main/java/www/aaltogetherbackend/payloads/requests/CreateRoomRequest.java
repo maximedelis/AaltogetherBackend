@@ -1,11 +1,17 @@
 package www.aaltogetherbackend.payloads.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreateRoomRequest(
         @NotBlank(message = "Room name cannot be blank") String name,
         String password,
         @JsonProperty("private")
-        boolean aprivate
+        boolean aprivate,
+        @Min(value = 2, message = "Room should have 2 users minimum")
+        @Max(value = 16, message = "Room should have 16 users maximum")
+        @JsonProperty("maxUsers")
+        int maxUsers
 ) {}

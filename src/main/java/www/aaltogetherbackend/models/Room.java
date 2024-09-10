@@ -1,6 +1,9 @@
 package www.aaltogetherbackend.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
@@ -18,7 +21,9 @@ public class Room {
 
     private String password;
 
-
+    @Min(value = 2, message = "Room should have 2 users minimum")
+    @Max(value = 16, message = "Room should have 16 users maximum")
+    private int maxUsers;
 
     @ManyToOne
     @JoinColumn(name = "host_id")
@@ -69,4 +74,11 @@ public class Room {
         this.host = host;
     }
 
+    public int getMaxUsers() {
+        return maxUsers;
+    }
+
+    public void setMaxUsers(int maxUsers) {
+        this.maxUsers = maxUsers;
+    }
 }

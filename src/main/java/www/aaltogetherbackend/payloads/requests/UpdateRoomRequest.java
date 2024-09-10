@@ -1,7 +1,11 @@
 package www.aaltogetherbackend.payloads.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.UUID;
 
 public record UpdateRoomRequest(
@@ -13,5 +17,10 @@ public record UpdateRoomRequest(
         String password,
 
         @JsonProperty("private")
-        boolean aprivate
+        boolean aprivate,
+
+        @Min(value = 2, message = "Room should have 2 users minimum")
+        @Max(value = 16, message = "Room should have 16 users maximum")
+        @JsonProperty("maxUsers")
+        int maxUsers
 ) {}
