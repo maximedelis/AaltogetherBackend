@@ -2,8 +2,12 @@ package www.aaltogetherbackend.services;
 
 import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.models.Room;
+import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.payloads.responses.RoomInfoResponse;
 import www.aaltogetherbackend.repositories.RoomRepository;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -15,16 +19,8 @@ public class RoomService {
         this.roomRepository = roomRepository;
     }
 
-    public boolean checkExists(String name) {
-        return roomRepository.existsByName(name);
-    }
-
     public boolean checkExistsById(UUID id) {
         return roomRepository.existsById(id);
-    }
-
-    public Room getRoom(String name) {
-        return roomRepository.findByName(name);
     }
 
     public Room getRoom(UUID id) {
@@ -33,6 +29,28 @@ public class RoomService {
 
     public void saveRoom(Room room) {
         roomRepository.save(room);
+    }
+
+    public void deleteRoom(UUID id) {
+        roomRepository.deleteById(id);
+    }
+
+    public Set<RoomInfoResponse> getPublicRooms() {
+        Set<RoomInfoResponse> rooms = new HashSet<>();
+        Set<Room> publicRooms = roomRepository.findAllByAprivateFalse();
+        for (Room room : publicRooms) {
+            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), null, room.isAprivate(), room.getMaxUsers()));
+        }
+        return rooms;
+    }
+
+    public Set<RoomInfoResponse> getRoomsByHost(User user) {
+        Set<RoomInfoResponse> rooms = new HashSet<>();
+        Set<Room> userRooms = roomRepository.findAllByHost(user);
+        for (Room room : userRooms) {
+            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), room.getPassword(), room.isAprivate(), room.getMaxUsers()));
+        }
+        return rooms;
     }
 
 }

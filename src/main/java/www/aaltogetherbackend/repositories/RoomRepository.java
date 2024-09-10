@@ -9,9 +9,7 @@ import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
 
-    Room findByName(String name);
-
-    boolean existsByName(String name);
+    Set<Room> findAllByAprivateFalse();
 
     Set<Room> findAllByHost(User user);
 

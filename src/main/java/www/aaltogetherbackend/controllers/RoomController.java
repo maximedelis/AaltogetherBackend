@@ -27,9 +27,6 @@ public class RoomController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
-        if (roomService.checkExists(createRoomRequest.name())) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room already exists"));
-        }
         Room room = new Room();
         room.setName(createRoomRequest.name());
         room.setAprivate(createRoomRequest.aprivate());
@@ -45,30 +42,7 @@ public class RoomController {
         return ResponseEntity.ok().body(room);
     }
 
-    /* ACTUALLY USELESS
-    @GetMapping("/join")
-    public ResponseEntity<?> joinRoom(@Valid @RequestBody JoinRoomRequest joinRoomRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
-
-        if (!roomService.checkExists(joinRoomRequest.getName())) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
-        }
-        Room room = roomService.getRoom(joinRoomRequest.getName());
-
-        if (room.getHost().getId().equals(user.getId())) {
-            return ResponseEntity.ok().body(room.getId());
-        }
-
-        if (room.isAprivate() && !room.getPassword().equals(joinRoomRequest.getPassword())) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Incorrect password"));
-        }
-
-        return ResponseEntity.ok().body(room.getId());
-    }
-    */
-
-    @PostMapping("/update")
+    @PatchMapping("/update")
     public ResponseEntity<?> updateRoom(@Valid @RequestBody UpdateRoomRequest updateRoomRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
@@ -95,6 +69,18 @@ public class RoomController {
         roomService.saveRoom(room);
 
         return ResponseEntity.ok().body(room);
+    }
+
+    @GetMapping("/get-public-rooms")
+    public ResponseEntity<?> getPublicRooms() {
+        return ResponseEntity.ok().body(roomService.getPublicRooms());
+    }
+
+    @GetMapping("/get-personal-rooms")
+    public ResponseEntity<?> getPersonalRooms() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(roomService.getRoomsByHost(user));
     }
 
 }
