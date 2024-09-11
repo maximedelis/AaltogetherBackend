@@ -64,7 +64,7 @@ public class UserController {
 
         String jwt = jwtUtils.generateToken(currentUser.getUsername());
 
-        return ResponseEntity.ok().body(new LoginResponse("User updated successfully", jwt));
+        return ResponseEntity.ok().body(new LoginResponse("User updated successfully", jwt, null));
     }
 
 }

@@ -37,6 +37,13 @@ public class TokenFilter extends OncePerRequestFilter {
         try {
             String token = jwtUtils.getJwtFromRequest(request);
 
+            if (jwtUtils.isExpired(token)) {
+                System.out.println("token is expired");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token is expired");
+                return;
+            }
+
             if (token != null && jwtUtils.verifyToken(token)) {
                 System.out.println("token is valid");
 
