@@ -6,6 +6,11 @@ Stay tuned.
 
 ## Getting Started
 
+The project can be run in three ways:
+- Using `docker compose` to run a PostgreSQL instance and the backend
+- Using a local PostgreSQL instance and running the backend
+- Running the backend only (in memory database)
+
 ### Requirements
 
 - Docker & docker compose: `sudo apt install docker.io docker-compose-v2`
@@ -39,7 +44,9 @@ sudo docker compose up
 
 Add `-d` to run in detached mode
 
-### Run without docker compose (create a container for the DB)
+### Local PostgreSQL instance
+
+If you don't want to use `docker compose`, you can run the following command to create a local PostgreSQL instance:
 
 ```bash
 sudo docker run -e POSTGRES_PASSWORD='password' -e POSTGRES_USER='postgres' -e POSTGRES_DB='postgres' -p 5432:5432 postgres
