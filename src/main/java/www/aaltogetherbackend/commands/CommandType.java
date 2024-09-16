@@ -17,7 +17,7 @@ public enum CommandType {
     public static final String SYNC_BEAN_NAME = "syncHandler";
     public static final String OPEN_BEAN_NAME = "openHandler";
 
-    private String beanName;
+    private final String beanName;
     CommandType(String beanName) { this.beanName = beanName; }
     public String beanName() { return beanName; }
 }

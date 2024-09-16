@@ -7,16 +7,16 @@
 <script>
     const chat = document.getElementById('chat');
     const hostIp = "localhost";
-    const roomUUID = "2f919f37-eecb-4b82-9793-87265049422e";
-    const password = "password";
-    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNzI2NTE1NzYxLCJleHAiOjE3MjY1MTkzNjF9.JIiqFZYneqUKgbaVQ0NZC3eWYSGborsjFQF1v6mlJuc";
+    const roomUUID = "02d1e5bc-2efd-46c0-90e0-e771728e864b";
+    const code = "931216";
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNzI2NTE5MDA1LCJleHAiOjE3MjY1MjI2MDV9.0X8r8eoILtOg-4v2DYTMSt_z6-oXPtPsegHhjhWCNpc";
 
     const ws = io('http://' + hostIp +':8085', {
         autoConnect: false,
         
         query: {
             room: roomUUID,
-            password: password,
+            code: code,
             jwt: jwt
         }
     });

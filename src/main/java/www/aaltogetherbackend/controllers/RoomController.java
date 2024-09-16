@@ -61,12 +61,7 @@ public class RoomController {
 
         room.setName(updateRoomRequest.name());
 
-        if (updateRoomRequest.aprivate() && updateRoomRequest.password() == null) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Password is required for private rooms"));
-        }
-
         room.setAprivate(updateRoomRequest.aprivate());
-        room.setCode(updateRoomRequest.password());
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
