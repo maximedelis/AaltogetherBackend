@@ -62,6 +62,7 @@ Then, run the backend using the following command:
 
 Requirements:
 - JDK 22
+- Update the `.env.test` file with your MailTrap credentials
 
 Run the backend using the following command:
 
