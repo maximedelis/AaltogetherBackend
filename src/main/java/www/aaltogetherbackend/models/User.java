@@ -53,6 +53,16 @@ public class User implements UserDetails {
         return password;
     }
 
+    private boolean isEmailVerified = false;
+
+    public boolean isEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        isEmailVerified = emailVerified;
+    }
+
     public String getEmail() {
         return email;
     }

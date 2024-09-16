@@ -22,6 +22,9 @@ DB_DRIVER=org.postgresql.Driver
 HOST_IP=127.0.0.1
 
 HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+
+MAIL_USERNAME=<MAILTRAP_EMAIL>
+MAIL_PASSWORD=<MAILTRAP_PASSWORD>
 ```
 
 ### 1. Using `docker compose`

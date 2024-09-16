@@ -1,0 +1,28 @@
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+
+<script>
+    const hostIp = "localhost";
+    const roomUUID = "a2d8de1f-0fc4-45cc-b60f-9be379ca386c";
+    const password = "password";
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNzI1OTc5NzgzLCJleHAiOjE3MjU5ODA2ODN9.gzvJvQPH2R-ri0m1_jbx_i34G7mvVznCxBExnog-p5o";
+
+    const ws = io('http://' + hostIp +':8085', {
+        autoConnect: false,
+        
+        query: {
+            room: roomUUID,
+            password: password,
+            jwt: jwt
+        }
+    });
+    
+    //ws.connect();
+    
+    function sendMessage(room, command, value) {
+        let message = {
+            command: command,
+            value: value
+        };
+        ws.emit('command', message);
+    }
+</script>
