@@ -6,8 +6,8 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.services.JwtUtils;
@@ -31,10 +31,11 @@ public class SocketModule {
         this.jwtUtils = jwtUtils;
         server.addConnectListener(onConnected());
         server.addDisconnectListener(onDisconnected());
-        server.addEventListener("command", SocketMessage.class, onChatReceived());
+        server.addEventListener("command", SocketCommand.class, onCommandReceived());
+        server.addEventListener("message", SocketMessage.class, onMessageReceived());
     }
 
-    private DataListener<SocketMessage> onChatReceived() {
+    private DataListener<SocketCommand> onCommandReceived() {
         return (senderClient, data, ackSender) -> {
             UUID roomUUID = UUID.fromString(senderClient.getHandshakeData().getSingleUrlParam("room"));
             log.info("Command received: {}", data.command());
@@ -45,13 +46,21 @@ public class SocketModule {
         };
     }
 
+    private DataListener<SocketMessage> onMessageReceived() {
+        return (senderClient, data, ackSender) -> {
+            UUID roomUUID = UUID.fromString(senderClient.getHandshakeData().getSingleUrlParam("room"));
+            log.info("Message received: {}", data.message());
+            socketService.sendMessage(roomUUID,
+                    senderClient,
+                    data.message());
+        };
+    }
+
     private ConnectListener onConnected() {
         return (client) -> {
             String roomUUID = client.getHandshakeData().getSingleUrlParam("room");
-            String password = client.getHandshakeData().getSingleUrlParam("password");
+            String code = client.getHandshakeData().getSingleUrlParam("code");
             String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
-
-            System.out.println(client.getNamespace().getRoomOperations(roomUUID).getClients().size());
 
             if (!jwtUtils.verifyToken(jwt)) {
                 log.info("Socket ID[{}] - room[{}]  Invalid JWT", client.getSessionId().toString(), roomUUID);
@@ -66,7 +75,7 @@ public class SocketModule {
                 client.disconnect();
                 return;
             }
-            if (room.isAprivate() && !room.getPassword().equals(password)) {
+            if (room.isAprivate() && !room.getCode().equals(code)) {
                 log.info("Socket ID[{}] - room[{}]  Wrong password", client.getSessionId().toString(), roomUUID);
                 client.disconnect();
                 return;

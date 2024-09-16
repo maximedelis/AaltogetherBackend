@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Min;
 import java.util.UUID;
 
 @Entity
-@Table(name = "rooms")
+@Table(name = "rooms", uniqueConstraints =
+        @UniqueConstraint(columnNames = "code")
+)
 public class Room {
 
     @Id
@@ -18,7 +20,8 @@ public class Room {
 
     private boolean aprivate;
 
-    private String password;
+    @Column(nullable = true, unique = true)
+    private String code;
 
     @Min(value = 2, message = "Room should have 2 users minimum")
     @Max(value = 16, message = "Room should have 16 users maximum")
@@ -57,12 +60,12 @@ public class Room {
         this.aprivate = isprivate;
     }
 
-    public String getPassword() {
-        return password;
+    public String getCode() {
+        return code;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setCode(String password) {
+        this.code = password;
     }
 
     public User getHost() {

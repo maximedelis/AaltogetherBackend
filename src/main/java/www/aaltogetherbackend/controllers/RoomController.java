@@ -12,6 +12,8 @@ import www.aaltogetherbackend.payloads.requests.UpdateRoomRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.services.RoomService;
 
+import java.util.Random;
+
 @RestController
 @RequestMapping("/api/room")
 public class RoomController {
@@ -33,11 +35,11 @@ public class RoomController {
         room.setHost(user);
         room.setMaxUsers(createRoomRequest.maxUsers());
         if (createRoomRequest.aprivate()) {
-            if (createRoomRequest.password() == null) {
-                return ResponseEntity.badRequest().body(new ErrorMessageResponse("Password is required for private rooms"));
-            }
+            Random random = new Random();
+            int code = 100000 + random.nextInt(900000);
+            String roomCode = String.format("%06d", code);
+            room.setCode(roomCode);
         }
-        room.setPassword(createRoomRequest.password());
         roomService.saveRoom(room);
         return ResponseEntity.ok().body(room);
     }
@@ -64,7 +66,7 @@ public class RoomController {
         }
 
         room.setAprivate(updateRoomRequest.aprivate());
-        room.setPassword(updateRoomRequest.password());
+        room.setCode(updateRoomRequest.password());
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
@@ -81,6 +83,15 @@ public class RoomController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(roomService.getRoomsByHost(user));
+    }
+
+    @GetMapping("/get-room-by-code")
+    public ResponseEntity<?> getRoomByCode(@RequestParam String code) {
+        Room room = roomService.getRoomByCode(code);
+        if (room == null) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
+        }
+        return ResponseEntity.ok().body(room);
     }
 
 }

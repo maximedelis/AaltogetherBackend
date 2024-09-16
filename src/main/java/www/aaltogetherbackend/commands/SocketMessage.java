@@ -1,6 +1,3 @@
 package www.aaltogetherbackend.commands;
 
-public record SocketMessage(
-        String command,
-        String value
-) {}
+public record SocketMessage(String message) {}

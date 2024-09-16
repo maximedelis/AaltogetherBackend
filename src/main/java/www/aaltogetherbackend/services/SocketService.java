@@ -4,7 +4,8 @@ import com.corundumstudio.socketio.SocketIOClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import www.aaltogetherbackend.commands.CommandResponse;
+import www.aaltogetherbackend.commands.SocketCommand;
+import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
 
 import java.util.UUID;
@@ -24,14 +25,24 @@ public class SocketService {
         for (
                 SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
             if (!clients.getSessionId().equals(senderClient.getSessionId())) {
-                clients.sendEvent("get_command", new CommandResponse(command, commandValue));
+                clients.sendEvent("get_command", new SocketCommand(command, commandValue));
             }
+        }
+    }
+
+    public void sendMessage(UUID room, SocketIOClient senderClient, String message) {
+        log.info("Message sent: {}", message);
+        for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
+        {
+            clients.sendEvent("get_message", new SocketMessage(message));
         }
     }
 
     public void deleteRoomIfEmpty(UUID room, SocketIOClient client) {
         if (client.getNamespace().getRoomOperations(room.toString()).getClients().isEmpty()) {
-            roomService.deleteRoom(room);
+            if (roomService.checkExistsById(room)) {
+                roomService.deleteRoom(room);
+            }
         }
     }
 
@@ -44,6 +55,8 @@ public class SocketService {
         for (SocketIOClient clients : client.getNamespace().getRoomOperations(room.toString()).getClients()) {
             clients.disconnect();
         }
-        roomService.deleteRoom(room);
+        if (roomService.checkExistsById(room)) {
+            roomService.deleteRoom(room);
+        }
     }
 }

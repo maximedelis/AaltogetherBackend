@@ -1,6 +1,6 @@
 package www.aaltogetherbackend.commands;
 
-public record CommandResponse(
+public record SocketCommand(
         String command,
         String value
 ) {}

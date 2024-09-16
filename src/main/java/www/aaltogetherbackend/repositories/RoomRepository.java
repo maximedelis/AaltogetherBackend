@@ -14,4 +14,6 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     Set<Room> findAllByHost(User user);
 
     boolean existsById(UUID id);
+
+    Room findByCode(String code);
 }

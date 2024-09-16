@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "email_confirmation_tokens")
+@Table(name = "email_confirmation_tokens", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "token")
+})
 public class EmailConfirmationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

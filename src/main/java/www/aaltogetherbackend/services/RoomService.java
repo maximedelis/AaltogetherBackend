@@ -48,9 +48,13 @@ public class RoomService {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<Room> userRooms = roomRepository.findAllByHost(user);
         for (Room room : userRooms) {
-            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), room.getPassword(), room.isAprivate(), room.getMaxUsers()));
+            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers()));
         }
         return rooms;
+    }
+
+    public Room getRoomByCode(String code) {
+        return roomRepository.findByCode(code);
     }
 
 }
