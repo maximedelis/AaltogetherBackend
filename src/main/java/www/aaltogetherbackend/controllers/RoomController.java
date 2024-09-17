@@ -10,6 +10,7 @@ import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.payloads.requests.CreateRoomRequest;
 import www.aaltogetherbackend.payloads.requests.UpdateRoomRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
+import www.aaltogetherbackend.payloads.responses.RoomInfoResponse;
 import www.aaltogetherbackend.services.RoomService;
 
 import java.util.Random;
@@ -61,7 +62,21 @@ public class RoomController {
 
         room.setName(updateRoomRequest.name());
 
-        room.setAprivate(updateRoomRequest.aprivate());
+        if (updateRoomRequest.aprivate() && !room.isAprivate()) {
+            room.setAprivate(true);
+            if (room.getCode() == null) {
+                Random random = new Random();
+                int code = 100000 + random.nextInt(900000);
+                String roomCode = String.format("%06d", code);
+                room.setCode(roomCode);
+            }
+        }
+
+        if (!updateRoomRequest.aprivate() && room.isAprivate()) {
+            room.setAprivate(false);
+            room.setCode(null);
+        }
+
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
@@ -82,7 +97,7 @@ public class RoomController {
 
     @GetMapping("/get-room-by-code")
     public ResponseEntity<?> getRoomByCode(@RequestParam String code) {
-        Room room = roomService.getRoomByCode(code);
+        RoomInfoResponse room = roomService.getRoomByCode(code);
         if (room == null) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
         }

@@ -53,8 +53,12 @@ public class RoomService {
         return rooms;
     }
 
-    public Room getRoomByCode(String code) {
-        return roomRepository.findByCode(code);
+    public RoomInfoResponse getRoomByCode(String code) {
+        Room room = roomRepository.findByCode(code);
+        if (room == null) {
+            return null;
+        }
+        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers());
     }
 
 }

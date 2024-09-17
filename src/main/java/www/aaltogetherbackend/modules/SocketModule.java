@@ -75,11 +75,14 @@ public class SocketModule {
                 client.disconnect();
                 return;
             }
+
+            /*
             if (room.isAprivate() && !room.getCode().equals(code)) {
                 log.info("Socket ID[{}] - room[{}]  Wrong password", client.getSessionId().toString(), roomUUID);
                 client.disconnect();
                 return;
             }
+            */
 
             if (!socketService.hasSpace(UUID.fromString(roomUUID), client)) {
                 log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), roomUUID);
