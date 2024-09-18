@@ -2,12 +2,10 @@ package www.aaltogetherbackend.services;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Service
@@ -15,16 +13,16 @@ public class JwtUtils {
 
     public String generateToken(String username) {
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + 3600000))
-                .signWith(jwtSecret, SignatureAlgorithm.HS256)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + 3600000))
+                .signWith(jwtSecret)
                 .compact();
     }
 
     public boolean verifyToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token);
+            Jwts.parser().verifyWith(jwtSecret).build().parseSignedClaims(token);
             return true;
         }
         catch (Exception e) {
@@ -42,7 +40,7 @@ public class JwtUtils {
 
     public boolean isExpired(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(jwtSecret).build().parse(token);
+            Jwts.parser().verifyWith(jwtSecret).build().parseSignedClaims(token);
             return false;
         }
         catch (ExpiredJwtException e) {
@@ -51,9 +49,9 @@ public class JwtUtils {
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(jwtSecret).build()
-                .parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().verifyWith(jwtSecret).build()
+                .parseSignedClaims(token).getPayload().getSubject();
     }
 
-    private final Key jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey jwtSecret = Jwts.SIG.HS256.key().build();
 }
