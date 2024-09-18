@@ -29,13 +29,20 @@ public class TokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (path.startsWith("/api/auth") || path.startsWith("/h2-console") || path.startsWith("/favicon.ico")) {
+        if (path.startsWith("/api/auth") || path.startsWith("/h2-console") || path.startsWith("/favicon.ico") || path.startsWith("/swagger-ui") || path.startsWith("/v3")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             String token = jwtUtils.getJwtFromRequest(request);
+
+            if (token == null) {
+                System.out.println("token is null");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Unauthorized");
+                return;
+            }
 
             if (jwtUtils.isExpired(token)) {
                 System.out.println("token is expired");
@@ -44,7 +51,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (token != null && jwtUtils.verifyToken(token)) {
+            if (jwtUtils.verifyToken(token)) {
                 System.out.println("token is valid");
 
                 String username = jwtUtils.getUsernameFromToken(token);
