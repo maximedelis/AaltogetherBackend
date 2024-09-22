@@ -7,6 +7,8 @@ COPY build.gradle settings.gradle gradlew ./
 COPY src ./src
 COPY gradle ./gradle
 
+RUN chmod +x ./gradlew
+
 RUN ./gradlew clean bootJar
 
 # Minimal RE

@@ -5,7 +5,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import www.aaltogetherbackend.models.File;
 import www.aaltogetherbackend.models.User;
-import www.aaltogetherbackend.payloads.responses.FileNoDataResponse;
 import www.aaltogetherbackend.repositories.FileRepository;
 
 import java.io.IOException;
