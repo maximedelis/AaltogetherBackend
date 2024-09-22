@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.services.JwtUtils;
@@ -18,10 +19,12 @@ public class TokenFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final UserService userService;
+    private final RequestAttributeSecurityContextRepository requestAttributeSecurityContextRepository;
 
-    public TokenFilter(final JwtUtils jwtUtils, UserService userService) {
+    public TokenFilter(final JwtUtils jwtUtils, UserService userService, RequestAttributeSecurityContextRepository requestAttributeSecurityContextRepository) {
         this.jwtUtils = jwtUtils;
         this.userService = userService;
+        this.requestAttributeSecurityContextRepository = requestAttributeSecurityContextRepository;
     }
 
     @Override
@@ -59,6 +62,8 @@ public class TokenFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                this.requestAttributeSecurityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
 
                 filterChain.doFilter(request, response);
             } else {

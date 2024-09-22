@@ -1,7 +1,8 @@
 package www.aaltogetherbackend.payloads.responses;
 
 public record FileNoDataResponse(
-        Long id,
+        long id,
         String name,
-        String type
+        String type,
+        String uploader
 ) {}

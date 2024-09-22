@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotEmpty;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private long id;
 
     @NotBlank(message = "Name cannot be empty.")
     private String name;

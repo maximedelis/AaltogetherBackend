@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -39,8 +40,13 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    public RequestAttributeSecurityContextRepository requestAttributeSecurityContextRepository() {
+        return new RequestAttributeSecurityContextRepository();
+    }
+
+    @Bean
     public TokenFilter tokenFilter() {
-        return new TokenFilter(jwtUtils, userDetailsService);
+        return new TokenFilter(jwtUtils, userDetailsService, requestAttributeSecurityContextRepository());
     }
 
     @Bean

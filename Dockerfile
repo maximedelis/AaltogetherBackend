@@ -16,6 +16,7 @@ RUN cd /opt
 
 COPY --from=builder ./build/libs/aaltogether-backend-0.0.1-SNAPSHOT.jar aaltogether-backend.jar
 
-EXPOSE 8080
+EXPOSE ${HOST_PORT}
+EXPOSE ${SOCKET_PORT}
 
 CMD ["java", "-jar", "aaltogether-backend.jar"]
