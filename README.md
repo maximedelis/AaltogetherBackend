@@ -20,6 +20,9 @@ DB_PASSWORD=password
 DB_DRIVER=org.postgresql.Driver
 
 HOST_IP=127.0.0.1
+HOST_PORT=8080
+
+SOCKET_PORT=8085
 
 HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
 
