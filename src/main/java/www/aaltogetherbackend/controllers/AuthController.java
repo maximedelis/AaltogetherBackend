@@ -1,6 +1,7 @@
 package www.aaltogetherbackend.controllers;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,6 +45,9 @@ public class AuthController {
         this.emailConfirmationTokenService = emailConfirmationTokenService;
     }
 
+    @Value("${HOST_PORT}")
+    private String hostPort;
+
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
@@ -80,7 +84,7 @@ public class AuthController {
 
         String token = emailConfirmationTokenService.generateEmailVerificationToken(user);
 
-        mailService.SendMail("test@example.com", "Email Verification", "Click here to verify your email: http://localhost:8080/api/auth/verify-email?token=" + token);
+        mailService.SendMail("test@example.com", "Email Verification", "Click here to verify your email: http://localhost:" + hostPort + "/api/auth/verify-email?token=" + token);
         return ResponseEntity.ok().body(new MessageResponse("User registered successfully!"));
     }
 
