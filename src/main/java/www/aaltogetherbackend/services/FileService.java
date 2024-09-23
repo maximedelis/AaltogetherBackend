@@ -25,16 +25,8 @@ public class FileService {
         fileRepository.save(file);
     }
 
-    public File getFile(Long id, User user) {
-        File file = fileRepository.findById(id).orElse(null);
-        if (file == null) {
-            return null;
-        }
-        if (!file.getUploader().getId().equals(user.getId())) {
-            return null;
-        }
-
-        return file;
+    public File getFile(Long id) {
+        return fileRepository.findById(id).orElse(null);
     }
 
     public void deleteFile(Long id) {
@@ -51,5 +43,13 @@ public class FileService {
             return false;
         }
         return file.getUploader().getId().equals(user.getId());
+    }
+
+    public String getContentType(Long id) {
+        File file = fileRepository.findById(id).orElse(null);
+        if (file == null) {
+            return null;
+        }
+        return file.getType();
     }
 }

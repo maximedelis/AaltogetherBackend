@@ -42,8 +42,6 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
-        System.out.println(updatePasswordRequest.oldPassword());
-
         if (!passwordEncoder.matches(updatePasswordRequest.oldPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Old password is incorrect"));
         }

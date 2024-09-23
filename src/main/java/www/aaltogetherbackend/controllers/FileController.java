@@ -1,6 +1,9 @@
 package www.aaltogetherbackend.controllers;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,15 +19,18 @@ import www.aaltogetherbackend.payloads.responses.MessageResponse;
 import www.aaltogetherbackend.services.FileService;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
 
     private final FileService fileService;
+    private final ResourceLoader resourceLoader;
 
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, ResourceLoader resourceLoader) {
         this.fileService = fileService;
+        this.resourceLoader = resourceLoader;
     }
 
     @PostMapping("/upload")
@@ -45,25 +51,34 @@ public class FileController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
-        File file = fileService.getFile(id, user);
-
-        if (file == null) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("File not found"));
+        if (!fileService.existsById(id)) {
+            return ResponseEntity.notFound().build();
         }
+
+        if (!fileService.isOwner(id, user)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        File file = fileService.getFile(id);
 
         return ResponseEntity.ok().body(new FileNoDataResponse(file.getId(), file.getName(), file.getType(), file.getUploader().getUsername()));
     }
 
+    // User should own the file
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
-        File file = fileService.getFile(id, user);
-
-        if (file == null) {
+        if (!fileService.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+
+        if (!fileService.isOwner(id, user)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        File file = fileService.getFile(id);
 
         String contentType = file.getType();
         if (contentType == null) {
@@ -77,6 +92,7 @@ public class FileController {
                 .body(file.getData());
     }
 
+    // User should own the file
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteFile(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -95,26 +111,51 @@ public class FileController {
     }
 
     @GetMapping("/play/{id}")
-    public ResponseEntity<StreamingResponseBody> playFile(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
+    public ResponseEntity<StreamingResponseBody> streamVideo(@PathVariable Long id,
+                                                             @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
+        String audioPath = "db:" + id;
+        Resource audioResource = resourceLoader.getResource(audioPath);
+        String contentType = fileService.getContentType(id);
 
-        File file = fileService.getFile(id, user);
+        long contentLength = audioResource.contentLength();
 
-        if (file == null) {
-            return ResponseEntity.notFound().build();
+        long rangeStart;
+        long rangeEnd = contentLength - 1;
+
+        if (rangeHeader != null) {
+            String[] ranges = rangeHeader.substring("bytes=".length()).split("-");
+            rangeStart = Long.parseLong(ranges[0]);
+            if (ranges.length > 1) {
+                rangeEnd = Long.parseLong(ranges[1]);
+            }
+        } else {
+            rangeStart = 0;
         }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                .body(outputStream -> {
-                    try {
-                        outputStream.write(file.getData());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+        long contentSize = rangeEnd - rangeStart + 1;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", contentType);
+        headers.add("Accept-Ranges", "bytes");
+        headers.add("Content-Length", String.valueOf(contentSize));
+        headers.add("Content-Range", String.format("bytes %d-%d/%d", rangeStart, rangeEnd, contentLength));
+
+        StreamingResponseBody responseBody = outputStream -> {
+            try (InputStream inputStream = audioResource.getInputStream()) {
+                inputStream.skip(rangeStart);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                long totalBytesRead = 0;
+                while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytesRead < contentSize) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
+                }
+            }
+        };
+
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .headers(headers)
+                .body(responseBody);
     }
 
 }
