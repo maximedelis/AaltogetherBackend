@@ -18,6 +18,7 @@ import www.aaltogetherbackend.payloads.requests.SignupRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.LoginResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
+import www.aaltogetherbackend.payloads.responses.UserInfoResponse;
 import www.aaltogetherbackend.repositories.UserRepository;
 import www.aaltogetherbackend.services.*;
 
@@ -64,7 +65,8 @@ public class AuthController {
 
         refreshTokenService.deleteByUser(user);
         String refreshToken = refreshTokenService.generateRefreshToken(loginRequest.username());
-        return ResponseEntity.ok().body(new LoginResponse("You've been signed in!", jwt, refreshToken));
+        UserInfoResponse userInfoResponse = new UserInfoResponse(user.getUsername(), user.getEmail());
+        return ResponseEntity.ok().body(new LoginResponse("You've been signed in!", jwt, refreshToken, userInfoResponse));
     }
 
     @PostMapping("/signup")
@@ -101,7 +103,8 @@ public class AuthController {
         String username = refreshToken.get().getUser().getUsername();
 
         String jwt = jwtUtils.generateToken(username);
-        return ResponseEntity.ok().body(new LoginResponse("Token refreshed!", jwt, refreshTokenRequest.refreshToken()));
+        UserInfoResponse userInfoResponse = new UserInfoResponse(username, refreshToken.get().getUser().getEmail());
+        return ResponseEntity.ok().body(new LoginResponse("Token refreshed!", jwt, refreshTokenRequest.refreshToken(), userInfoResponse));
     }
 
     @GetMapping("/logout")
