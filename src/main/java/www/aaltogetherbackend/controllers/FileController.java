@@ -11,10 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import www.aaltogetherbackend.models.File;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
-import www.aaltogetherbackend.payloads.responses.FileNoDataResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
 import www.aaltogetherbackend.services.FileService;
 
@@ -59,9 +57,7 @@ public class FileController {
             return ResponseEntity.status(401).build();
         }
 
-        File file = fileService.getFile(id);
-
-        return ResponseEntity.ok().body(new FileNoDataResponse(file.getId(), file.getName(), file.getType(), file.getUploader().getUsername()));
+        return ResponseEntity.ok().body(fileService.getFileNoData(id));
     }
 
     // User should own the file
@@ -78,18 +74,28 @@ public class FileController {
             return ResponseEntity.status(401).build();
         }
 
-        File file = fileService.getFile(id);
+        String filePath = "db:" + id;
+        Resource resource = resourceLoader.getResource(filePath);
 
-        String contentType = file.getType();
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String contentType = fileService.getContentType(id);
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        String headerValue = "attachment; filename=\"" + file.getName() + "\"";
+        String headerValue = "attachment; filename=\"" + fileService.getName(id) + "\"";
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
-                .body(file.getData());
+        try (InputStream inputStream = resource.getInputStream()) {
+            byte[] fileData = inputStream.readAllBytes();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                    .body(fileData);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // User should own the file
@@ -113,11 +119,16 @@ public class FileController {
     @GetMapping("/play/{id}")
     public ResponseEntity<StreamingResponseBody> streamVideo(@PathVariable Long id,
                                                              @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
-        String audioPath = "db:" + id;
-        Resource audioResource = resourceLoader.getResource(audioPath);
+        String filePath = "db:" + id;
+        Resource resource = resourceLoader.getResource(filePath);
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
         String contentType = fileService.getContentType(id);
 
-        long contentLength = audioResource.contentLength();
+        long contentLength = resource.contentLength();
 
         long rangeStart;
         long rangeEnd = contentLength - 1;
@@ -135,13 +146,13 @@ public class FileController {
         long contentSize = rangeEnd - rangeStart + 1;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", contentType);
+        headers.add("Content-Type", MediaType.parseMediaType(contentType).toString());
         headers.add("Accept-Ranges", "bytes");
         headers.add("Content-Length", String.valueOf(contentSize));
         headers.add("Content-Range", String.format("bytes %d-%d/%d", rangeStart, rangeEnd, contentLength));
 
         StreamingResponseBody responseBody = outputStream -> {
-            try (InputStream inputStream = audioResource.getInputStream()) {
+            try (InputStream inputStream = resource.getInputStream()) {
                 inputStream.skip(rangeStart);
                 byte[] buffer = new byte[4096];
                 int bytesRead;

@@ -1,6 +1,6 @@
 package www.aaltogetherbackend.payloads.responses;
 
-public record UserInfoResponse(
-        String username,
-        String email
-) {}
+public interface UserInfoResponse {
+    String getUsername();
+    String getEmail();
+}

@@ -46,8 +46,8 @@ public class AuthController {
         this.emailConfirmationTokenService = emailConfirmationTokenService;
     }
 
-    @Value("${HOST_PORT}")
-    private String hostPort;
+    @Value("${FRONTEND_PORT}")
+    private String frontPort;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -65,8 +65,7 @@ public class AuthController {
 
         refreshTokenService.deleteByUser(user);
         String refreshToken = refreshTokenService.generateRefreshToken(loginRequest.username());
-        UserInfoResponse userInfoResponse = new UserInfoResponse(user.getUsername(), user.getEmail());
-        return ResponseEntity.ok().body(new LoginResponse("You've been signed in!", jwt, refreshToken, userInfoResponse));
+        return ResponseEntity.ok().body(new LoginResponse("You've been signed in!", jwt, refreshToken, userRepository.findUserInfoByUsername(loginRequest.username())));
     }
 
     @PostMapping("/signup")
@@ -86,7 +85,7 @@ public class AuthController {
 
         String token = emailConfirmationTokenService.generateEmailVerificationToken(user);
 
-        mailService.SendMail("test@example.com", "Email Verification", "Click here to verify your email: http://localhost:" + hostPort + "/api/auth/verify-email?token=" + token);
+        mailService.SendMail(signupRequest.email(), "Email Verification", "Click here to verify your email: http://localhost:" + frontPort + "/api/auth/verify-email?token=" + token);
         return ResponseEntity.ok().body(new MessageResponse("User registered successfully!"));
     }
 
@@ -103,8 +102,7 @@ public class AuthController {
         String username = refreshToken.get().getUser().getUsername();
 
         String jwt = jwtUtils.generateToken(username);
-        UserInfoResponse userInfoResponse = new UserInfoResponse(username, refreshToken.get().getUser().getEmail());
-        return ResponseEntity.ok().body(new LoginResponse("Token refreshed!", jwt, refreshTokenRequest.refreshToken(), userInfoResponse));
+        return ResponseEntity.ok().body(new LoginResponse("Token refreshed!", jwt, refreshTokenRequest.refreshToken(), userRepository.findUserInfoByUsername(username)));
     }
 
     @GetMapping("/logout")

@@ -12,7 +12,6 @@ import www.aaltogetherbackend.payloads.requests.UpdateUserRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.LoginResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
-import www.aaltogetherbackend.payloads.responses.UserInfoResponse;
 import www.aaltogetherbackend.repositories.UserRepository;
 import www.aaltogetherbackend.services.JwtUtils;
 
@@ -63,9 +62,7 @@ public class UserController {
 
         String jwt = jwtUtils.generateToken(currentUser.getUsername());
 
-        UserInfoResponse userInfoResponse = new UserInfoResponse(currentUser.getUsername(), currentUser.getEmail());
-
-        return ResponseEntity.ok().body(new LoginResponse("User updated successfully", jwt, null, userInfoResponse));
+        return ResponseEntity.ok().body(new LoginResponse("User updated successfully", jwt, null, userRepository.findUserInfoByUsername(updateUserRequest.username())));
     }
 
 }

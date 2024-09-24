@@ -15,7 +15,7 @@ public class DatabaseLoaderImpl implements DatabaseLoader {
     }
 
     public Resource getResource(Long id) {
-        byte[] byteArray = fileService.getFile(id).getData();
+        byte[] byteArray = fileService.getDataById(id);
         return new ByteArrayResource(byteArray);
     }
 }

@@ -1,10 +1,12 @@
 package www.aaltogetherbackend.services;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import www.aaltogetherbackend.models.File;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.payloads.responses.FileNoDataResponse;
 import www.aaltogetherbackend.repositories.FileRepository;
 
 import java.io.IOException;
@@ -25,10 +27,16 @@ public class FileService {
         fileRepository.save(file);
     }
 
-    public File getFile(Long id) {
-        return fileRepository.findById(id).orElse(null);
+    @Transactional
+    public byte[] getDataById(Long id) {
+        return fileRepository.findDataById(id);
     }
 
+    public FileNoDataResponse getFileNoData(Long id) {
+        return fileRepository.findFileNoDataById(id);
+    }
+
+    @Transactional
     public void deleteFile(Long id) {
         fileRepository.deleteById(id);
     }
@@ -46,10 +54,11 @@ public class FileService {
     }
 
     public String getContentType(Long id) {
-        File file = fileRepository.findById(id).orElse(null);
-        if (file == null) {
-            return null;
-        }
-        return file.getType();
+        return fileRepository.findTypeById(id);
     }
+
+    public String getName(Long id) {
+        return fileRepository.findNameById(id);
+    }
+
 }
