@@ -4,9 +4,11 @@ import com.corundumstudio.socketio.SocketIOClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import www.aaltogetherbackend.commands.CommandType;
 import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
+import www.aaltogetherbackend.models.User;
 
 import java.util.UUID;
 
@@ -15,12 +17,16 @@ public class SocketService {
     private static final Logger log = LoggerFactory.getLogger(SocketService.class);
 
     private final RoomService roomService;
+    private final JwtUtils jwtUtils;
+    private final UserService userService;
 
-    public SocketService(RoomService roomService) {
+    public SocketService(RoomService roomService, JwtUtils jwtUtils, UserService userService) {
         this.roomService = roomService;
+        this.jwtUtils = jwtUtils;
+        this.userService = userService;
     }
 
-    public void sendCommand(UUID room, SocketIOClient senderClient, String command, String commandValue) {
+    public void sendCommand(UUID room, SocketIOClient senderClient, CommandType command, String commandValue) {
         log.info("Command sent: {}", command);
         for (
                 SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
@@ -57,6 +63,21 @@ public class SocketService {
         }
         if (roomService.checkExistsById(room)) {
             roomService.deleteRoom(room);
+        }
+    }
+
+    public void kickUser(UUID roomId, SocketIOClient client, String username) {
+        String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
+        String host = jwtUtils.getUsernameFromToken(jwt);
+        User hostUser = userService.loadUserByUsername(host);
+        if (roomService.isHost(roomId, hostUser)) {
+            for (SocketIOClient clients : client.getNamespace().getRoomOperations(roomId.toString()).getClients()) {
+                String clientJwt = clients.getHandshakeData().getSingleUrlParam("jwt");
+                String clientUsername = jwtUtils.getUsernameFromToken(clientJwt);
+                if (clientUsername.equals(username)) {
+                    clients.disconnect();
+                }
+            }
         }
     }
 }

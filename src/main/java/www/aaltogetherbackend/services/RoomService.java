@@ -61,4 +61,9 @@ public class RoomService {
         return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers());
     }
 
+    public boolean isHost(UUID roomId, User user) {
+        Room room = roomRepository.findById(roomId).orElse(null);
+        return room != null && room.getHost().getId().equals(user.getId());
+    }
+
 }

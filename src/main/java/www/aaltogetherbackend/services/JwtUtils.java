@@ -2,6 +2,7 @@ package www.aaltogetherbackend.services;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
@@ -38,17 +39,18 @@ public class JwtUtils {
         return null;
     }
 
-    public boolean isExpired(String token) {
+    public boolean isValid(String token) {
         try {
             Jwts.parser().verifyWith(jwtSecret).build().parseSignedClaims(token);
             return false;
         }
-        catch (ExpiredJwtException e) {
+        catch (ExpiredJwtException | SignatureException e) {
             return true;
         }
     }
 
     public String getUsernameFromToken(String token) {
+        assert this.isValid(token);
         return Jwts.parser().verifyWith(jwtSecret).build()
                 .parseSignedClaims(token).getPayload().getSubject();
     }

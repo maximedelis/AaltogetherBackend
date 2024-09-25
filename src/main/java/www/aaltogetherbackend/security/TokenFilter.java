@@ -53,7 +53,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (jwtUtils.isExpired(token)) {
+            if (jwtUtils.isValid(token)) {
                 System.out.println("token is expired");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");

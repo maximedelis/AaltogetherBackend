@@ -1,6 +1,6 @@
 package www.aaltogetherbackend.commands;
 
 public record SocketCommand(
-        String command,
+        CommandType command,
         String value
 ) {}
