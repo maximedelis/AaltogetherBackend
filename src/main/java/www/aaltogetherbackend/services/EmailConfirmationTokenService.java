@@ -5,9 +5,7 @@ import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.models.EmailConfirmationToken;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.repositories.EmailConfirmationTokenRepository;
-import www.aaltogetherbackend.repositories.UserRepository;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,20 +23,8 @@ public class EmailConfirmationTokenService {
         emailConfirmationToken.setUser(user);
         emailConfirmationToken.setToken(UUID.randomUUID().toString());
 
-        emailConfirmationToken.setExpiryDate(Instant.now().plusSeconds(86400));
-
         emailConfirmationTokenRepository.save(emailConfirmationToken);
         return emailConfirmationToken.getToken();
-    }
-
-    public boolean isExpired(String token) {
-        EmailConfirmationToken emailConfirmationToken = emailConfirmationTokenRepository.findByToken(token).orElse(null);
-        assert emailConfirmationToken != null;
-        if (emailConfirmationToken.getExpiryDate().compareTo(Instant.now()) < 0) {
-            emailConfirmationTokenRepository.delete(emailConfirmationToken);
-            return true;
-        }
-        return false;
     }
 
     public Optional<EmailConfirmationToken> findByToken(String token) {

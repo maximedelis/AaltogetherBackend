@@ -2,8 +2,6 @@ package www.aaltogetherbackend.models;
 
 import jakarta.persistence.*;
 
-import java.time.Instant;
-
 @Entity
 @Table(name = "email_confirmation_tokens", uniqueConstraints = {
         @UniqueConstraint(columnNames = "token")
@@ -19,9 +17,6 @@ public class EmailConfirmationToken {
 
     @Column(nullable = false, unique = true)
     private String token;
-
-    @Column(nullable = false)
-    private Instant expiryDate;
 
     public EmailConfirmationToken() {
     }
@@ -50,11 +45,4 @@ public class EmailConfirmationToken {
         this.token = token;
     }
 
-    public Instant getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Instant expiryDate) {
-        this.expiryDate = expiryDate;
-    }
 }

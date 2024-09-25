@@ -18,7 +18,6 @@ import www.aaltogetherbackend.payloads.requests.SignupRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.LoginResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
-import www.aaltogetherbackend.payloads.responses.UserInfoResponse;
 import www.aaltogetherbackend.repositories.UserRepository;
 import www.aaltogetherbackend.services.*;
 
@@ -121,10 +120,6 @@ public class AuthController {
 
         if (emailConfirmationToken.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Token is invalid!"));
-        }
-
-        if (emailConfirmationTokenService.isExpired(token)) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Token is expired!"));
         }
 
         User user = emailConfirmationToken.get().getUser();

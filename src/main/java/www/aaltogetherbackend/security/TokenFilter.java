@@ -1,5 +1,6 @@
 package www.aaltogetherbackend.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.services.JwtUtils;
 import www.aaltogetherbackend.services.UserService;
 
@@ -44,14 +46,20 @@ public class TokenFilter extends OncePerRequestFilter {
             if (token == null) {
                 System.out.println("token is null");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Unauthorized");
+                response.setContentType("application/json");
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonResponse = objectMapper.writeValueAsString(new ErrorMessageResponse("Unauthorized"));
+                response.getWriter().write(jsonResponse);
                 return;
             }
 
             if (jwtUtils.isExpired(token)) {
                 System.out.println("token is expired");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token is expired");
+                response.setContentType("application/json");
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonResponse = objectMapper.writeValueAsString(new ErrorMessageResponse("TOKEN_EXPIRED"));
+                response.getWriter().write(jsonResponse);
                 return;
             }
 
