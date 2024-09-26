@@ -1,6 +1,7 @@
 package www.aaltogetherbackend.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,9 +18,8 @@ public class ControllerExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorMessageResponse(message));
     }
 
-    /*
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleExceptions(Exception ex) {
+    public ResponseEntity<?> handleAuthenticationExceptions(AuthenticationException ex) {
         return ResponseEntity.badRequest().body(new ErrorMessageResponse(ex.getMessage()));
-    }*/
+    }
 }
