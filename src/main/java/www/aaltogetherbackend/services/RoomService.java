@@ -66,4 +66,8 @@ public class RoomService {
         return room != null && room.getHost().getId().equals(user.getId());
     }
 
+    public boolean isFileShared(UUID roomId, long fileId) {
+        return roomRepository.existsByIdAndSharedFilesId(roomId, fileId);
+    }
+
 }

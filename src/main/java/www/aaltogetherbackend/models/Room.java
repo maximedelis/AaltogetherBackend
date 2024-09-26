@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -31,7 +33,17 @@ public class Room {
     @JoinColumn(name = "host_id")
     private User host;
 
-    // TODO: Files available in the room
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "shared_files", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "file_id"))
+    private Set<File> sharedFiles = new HashSet<>();
+
+    public Set<File> getSharedFiles() {
+        return sharedFiles;
+    }
+
+    public void setSharedFiles(Set<File> sharedFiles) {
+        this.sharedFiles = sharedFiles;
+    }
 
     public Room() {
     }

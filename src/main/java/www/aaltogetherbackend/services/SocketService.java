@@ -9,7 +9,9 @@ import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.modules.SocketModule;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service

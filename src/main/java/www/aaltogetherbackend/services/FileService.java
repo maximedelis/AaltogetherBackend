@@ -36,6 +36,10 @@ public class FileService {
         return fileRepository.findFileNoDataById(id);
     }
 
+    public void updateFile(Long id, String name) {
+        fileRepository.updateNameById(id, name);
+    }
+
     @Transactional
     public void deleteFile(Long id) {
         fileRepository.deleteById(id);

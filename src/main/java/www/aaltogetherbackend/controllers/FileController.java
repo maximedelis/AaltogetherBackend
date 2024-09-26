@@ -12,9 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.modules.SocketModule;
+import www.aaltogetherbackend.payloads.requests.PlayRequest;
+import www.aaltogetherbackend.payloads.requests.UpdateFileRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
 import www.aaltogetherbackend.services.FileService;
+import www.aaltogetherbackend.services.RoomService;
+import www.aaltogetherbackend.services.SocketService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,10 +30,14 @@ public class FileController {
 
     private final FileService fileService;
     private final ResourceLoader resourceLoader;
+    private final SocketModule socketModule;
+    private final RoomService roomService;
 
-    public FileController(FileService fileService, ResourceLoader resourceLoader) {
+    public FileController(FileService fileService, ResourceLoader resourceLoader, SocketModule socketModule, RoomService roomService) {
         this.fileService = fileService;
         this.resourceLoader = resourceLoader;
+        this.socketModule = socketModule;
+        this.roomService = roomService;
     }
 
     @PostMapping("/upload")
@@ -42,6 +51,24 @@ public class FileController {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Could not upload file"));
         }
         return ResponseEntity.ok().body(new MessageResponse("File uploaded successfully"));
+    }
+
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<?> updateFile(@PathVariable Long id, @RequestBody UpdateFileRequest updateFileRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        if (!fileService.existsById(id)) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("File not found"));
+        }
+
+        if (!fileService.isOwner(id, user)) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("You are not the owner of this file"));
+        }
+
+        fileService.updateFile(id, updateFileRequest.name());
+
+        return ResponseEntity.ok().body(new MessageResponse("File updated successfully"));
     }
 
     @GetMapping("/info/{id}")
@@ -116,17 +143,30 @@ public class FileController {
         return ResponseEntity.ok().body(new MessageResponse("File deleted successfully"));
     }
 
-    @GetMapping("/play/{id}")
-    public ResponseEntity<StreamingResponseBody> streamVideo(@PathVariable Long id,
+    @GetMapping("/play")
+    public ResponseEntity<StreamingResponseBody> streamFile(@RequestBody PlayRequest playRequest,
                                                              @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
-        String filePath = "db:" + id;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        String username = user.getUsername();
+
+        if (!roomService.isFileShared(playRequest.roomId(), playRequest.fileId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        if (!socketModule.isInRoom(playRequest.roomId(), username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        String filePath = "db:" + playRequest.fileId();
         Resource resource = resourceLoader.getResource(filePath);
 
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
 
-        String contentType = fileService.getContentType(id);
+        String contentType = fileService.getContentType(playRequest.fileId());
 
         long contentLength = resource.contentLength();
 

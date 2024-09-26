@@ -123,4 +123,14 @@ public class SocketModule {
         return users;
     }
 
+    public boolean isInRoom(UUID room, String username) {
+        Set<UsernameInfoResponse> users = this.getUsersInRoom(room);
+        for (UsernameInfoResponse user : users) {
+            if (user.username().equals(username)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

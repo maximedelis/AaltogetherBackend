@@ -6,17 +6,17 @@ import www.aaltogetherbackend.services.SocketService;
 
 import java.util.UUID;
 
-@Service(CommandType.OPEN_BEAN_NAME)
-public class OpenCommand implements Command {
+@Service(CommandType.PLAY_BEAN_NAME)
+public class PlayCommand implements Command {
 
     private final SocketService service;
 
-    public OpenCommand(SocketService service) {
+    public PlayCommand(SocketService service) {
         this.service = service;
     }
 
     @Override
     public void execute(UUID room, String value, SocketIOClient senderClient) {
-        service.sendCommand(room, senderClient, CommandType.OPEN, value);
+        service.sendCommand(room, senderClient, CommandType.PLAY, "");
     }
 }

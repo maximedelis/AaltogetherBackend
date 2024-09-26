@@ -16,4 +16,6 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     boolean existsById(UUID id);
 
     Room findByCode(String code);
+
+    boolean existsByIdAndSharedFilesId(UUID roomId, long fileId);
 }

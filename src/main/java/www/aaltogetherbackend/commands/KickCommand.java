@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Service(CommandType.KICK_BEAN_NAME)
 public class KickCommand implements Command {
+
     private final SocketService service;
 
     public KickCommand(SocketService service) {

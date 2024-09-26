@@ -1,6 +1,7 @@
 package www.aaltogetherbackend.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import www.aaltogetherbackend.models.File;
 import www.aaltogetherbackend.payloads.responses.FileNoDataResponse;
@@ -19,5 +20,9 @@ public interface FileRepository extends JpaRepository<File, Long> {
     byte[] findDataById(Long id);
 
     boolean existsById(Long id);
+
+    @Modifying
+    @Query("UPDATE File f SET f.name = :name WHERE f.id = :id")
+    void updateNameById(Long id, String name);
 
 }
