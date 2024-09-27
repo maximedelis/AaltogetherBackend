@@ -33,7 +33,7 @@ public class UserController {
     public ResponseEntity<?> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok().body(user);
+        return ResponseEntity.ok().body(userRepository.findUserInfoByUsername(user.getUsername()));
     }
 
     @PatchMapping("/update-password")
