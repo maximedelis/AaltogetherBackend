@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.modules.SocketModule;
 import www.aaltogetherbackend.payloads.requests.CreateRoomRequest;
 import www.aaltogetherbackend.payloads.requests.UpdateRoomRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
@@ -14,15 +15,18 @@ import www.aaltogetherbackend.payloads.responses.RoomInfoResponse;
 import www.aaltogetherbackend.services.RoomService;
 
 import java.util.Random;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/room")
 public class RoomController {
 
     private final RoomService roomService;
+    private final SocketModule socketModule;
 
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, SocketModule socketModule) {
         this.roomService = roomService;
+        this.socketModule = socketModule;
     }
 
     @PostMapping("/create")
@@ -83,21 +87,29 @@ public class RoomController {
         return ResponseEntity.ok().body(room);
     }
 
-    @GetMapping("/get-public-rooms")
-    public ResponseEntity<?> getPublicRooms() {
-        return ResponseEntity.ok().body(roomService.getPublicRooms());
+
+    @GetMapping("/get-rooms")
+    public ResponseEntity<?> getRooms() {
+        Set<RoomInfoResponse> rooms = getPublicRooms();
+        Set<RoomInfoResponse> personalRooms = getPersonalRooms();
+        rooms.addAll(personalRooms);
+        return ResponseEntity.ok().body(rooms);
+
     }
 
-    @GetMapping("/get-personal-rooms")
-    public ResponseEntity<?> getPersonalRooms() {
+    public Set<RoomInfoResponse> getPublicRooms() {
+        return roomService.getPublicRooms(socketModule);
+    }
+
+    public Set<RoomInfoResponse> getPersonalRooms() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok().body(roomService.getRoomsByHost(user));
+        return roomService.getRoomsByHost(user, socketModule);
     }
 
     @GetMapping("/get-room-by-code")
     public ResponseEntity<?> getRoomByCode(@RequestParam String code) {
-        RoomInfoResponse room = roomService.getRoomByCode(code);
+        RoomInfoResponse room = roomService.getRoomByCode(code, socketModule);
         if (room == null) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
         }

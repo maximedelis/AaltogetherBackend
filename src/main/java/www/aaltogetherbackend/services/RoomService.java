@@ -3,6 +3,7 @@ package www.aaltogetherbackend.services;
 import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.modules.SocketModule;
 import www.aaltogetherbackend.payloads.responses.RoomInfoResponse;
 import www.aaltogetherbackend.repositories.RoomRepository;
 
@@ -35,30 +36,30 @@ public class RoomService {
         roomRepository.deleteById(id);
     }
 
-    public Set<RoomInfoResponse> getPublicRooms() {
+    public Set<RoomInfoResponse> getPublicRooms(SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<Room> publicRooms = roomRepository.findAllByAprivateFalse();
         for (Room room : publicRooms) {
-            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), null, room.isAprivate(), room.getMaxUsers()));
+            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), null, room.isAprivate(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId())));
         }
         return rooms;
     }
 
-    public Set<RoomInfoResponse> getRoomsByHost(User user) {
+    public Set<RoomInfoResponse> getRoomsByHost(User user, SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<Room> userRooms = roomRepository.findAllByHost(user);
         for (Room room : userRooms) {
-            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers()));
+            rooms.add(new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId())));
         }
         return rooms;
     }
 
-    public RoomInfoResponse getRoomByCode(String code) {
+    public RoomInfoResponse getRoomByCode(String code, SocketModule socketModule) {
         Room room = roomRepository.findByCode(code);
         if (room == null) {
             return null;
         }
-        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers());
+        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId()));
     }
 
     public boolean isHost(UUID roomId, User user) {
