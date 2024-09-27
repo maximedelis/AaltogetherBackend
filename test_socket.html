@@ -7,8 +7,8 @@
 <script>
     const chat = document.getElementById('chat');
     const hostIp = "localhost";
-    const roomUUID = "0d614087-6bbe-49b7-9008-b69d130b2c83";
-    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiIsImlhdCI6MTcyNzQzNjg2NiwiZXhwIjoxNzI3NDQwNDY2fQ.jLew3Lo_8HwELCmuYhOLU6Ge1CY7TMqiX9zbPA5V-5o";
+    const roomUUID = "3c9edf70-58dd-4068-be98-f09c3cde0d40";
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiIsImlhdCI6MTcyNzQ0MDc1MSwiZXhwIjoxNzI3NDQ0MzUxfQ.hIcpuOy5Qg0HlGl_hqCDrBZZWdkO3Hy-H4BpFGJXgyI";
 
     const ws = io('http://' + hostIp +':8085', {
         autoConnect: false,
@@ -19,7 +19,15 @@
         reconnection: false
     });
 
-    //ws.connect();
+    let isConnected = false;
+
+    function connectSocket() {
+        if (!isConnected) {
+            ws.connect();
+            isConnected = true;
+            joinRoom();
+        }
+    }
 
     function sendCommand(command, value) {
         let message = {
@@ -27,6 +35,13 @@
             value: value
         };
         ws.emit('command', message);
+    }
+
+    function joinRoom() {
+        let joinRoom = {
+            room: roomUUID
+        };
+        ws.emit('join', joinRoom);
     }
 
     function sendMessage(message) {

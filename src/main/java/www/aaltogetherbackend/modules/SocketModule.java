@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import www.aaltogetherbackend.commands.SocketCommand;
+import www.aaltogetherbackend.commands.SocketJoinRoom;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.payloads.responses.UsernameInfoResponse;
@@ -44,6 +45,7 @@ public class SocketModule {
         server.addDisconnectListener(onDisconnected());
         server.addEventListener("command", SocketCommand.class, onCommandReceived());
         server.addEventListener("message", SocketMessage.class, onMessageReceived());
+        server.addEventListener("join", SocketJoinRoom.class, onJoinRoom());
     }
 
     private DataListener<SocketCommand> onCommandReceived() {
@@ -68,41 +70,49 @@ public class SocketModule {
         };
     }
 
+    // Handles the connection before joining a room
     private ConnectListener onConnected() {
         return (client) -> {
-            String roomUUID = client.getHandshakeData().getSingleUrlParam("room");
             String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
 
             if (!jwtUtils.verifyToken(jwt)) {
-                log.info("Socket ID[{}] - room[{}]  Invalid JWT", client.getSessionId().toString(), roomUUID);
+                log.info("Socket ID[{}] Invalid JWT", client.getSessionId().toString());
                 client.disconnect();
                 return;
             }
 
-            Room room = roomService.getRoom(UUID.fromString(roomUUID));
+            log.info("Socket ID[{}] Connected to chat module through", client.getSessionId().toString());
+        };
+    }
+
+    // Handles the connection after joining a room
+    private DataListener<SocketJoinRoom> onJoinRoom() {
+        return (client, data, ackSender) -> {
+            Room room = roomService.getRoom(data.room());
 
             if (room == null) {
-                log.info("Socket ID[{}] - room[{}]  Room not found", client.getSessionId().toString(), roomUUID);
+                log.info("Socket ID[{}]  Room not found", client.getSessionId().toString());
                 client.disconnect();
                 return;
             }
 
-            if (!socketService.hasSpace(UUID.fromString(roomUUID), client)) {
-                log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), roomUUID);
+            if (!socketService.hasSpace(room.getId(), client)) {
+                log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), room.getId());
                 client.disconnect();
                 return;
             }
 
-            if (this.isInRoom(UUID.fromString(roomUUID), jwtUtils.getUsernameFromToken(jwt))) {
+            String username = jwtUtils.getUsernameFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
+
+            if (this.isInRoom(room.getId(), username)) {
+                log.info("Socket ID[{}] - room[{}]  Already in room", client.getSessionId().toString(), room.getId());
+                client.disconnect();
                 return;
             }
 
-            client.joinRoom(roomUUID);
-
-            //String clientUsername = jwtUtils.getUsernameFromToken(jwt);
-            //socketService.sendCommand(UUID.fromString(roomUUID), client, "join", clientUsername);
-
-            log.info("Socket ID[{}] - room[{}]  Connected to chat module through", client.getSessionId().toString(), room);
+            client.joinRoom(room.getId().toString());
+            socketService.sendMessage(room.getId(), client, username + " has joined the room.");
+            log.info("Socket ID[{}] - room[{}]  Joined room", client.getSessionId().toString(), room.getId());
         };
     }
 
@@ -110,8 +120,12 @@ public class SocketModule {
         return client -> {
             UUID roomUUID = UUID.fromString(client.getHandshakeData().getSingleUrlParam("room"));
             String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
-            //String clientUsername = jwtUtils.getUsernameFromToken(jwt);
-            //socketService.sendCommand(roomUUID, client, "leave", clientUsername);
+            String username = jwtUtils.getUsernameFromToken(jwt);
+
+            if (!this.isInRoom(roomUUID, username)) {
+                socketService.sendDisconnectMessage(roomUUID, client, username + " has left the room.");
+            }
+
             socketService.deleteRoomIfEmpty(roomUUID, client);
             log.info("Client[{}] - Disconnected from chat module.", client.getSessionId().toString());
         };

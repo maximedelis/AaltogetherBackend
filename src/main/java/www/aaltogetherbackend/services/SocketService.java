@@ -52,6 +52,14 @@ public class SocketService {
         }
     }
 
+    public void sendDisconnectMessage(UUID room, SocketIOClient senderClient, String message) {
+        log.info("Message sent: {}", message);
+        for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
+        {
+            clients.sendEvent("get_message", new SocketMessage(message));
+        }
+    }
+
     public void deleteRoomIfEmpty(UUID room, SocketIOClient client) {
         if (client.getNamespace().getRoomOperations(room.toString()).getClients().isEmpty()) {
             if (roomService.checkExistsById(room)) {
@@ -88,6 +96,5 @@ public class SocketService {
             }
         }
     }
-
 
 }
