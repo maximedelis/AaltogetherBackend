@@ -14,12 +14,10 @@ import java.util.UUID;
 @Service
 public class RoomService {
 
-    private final SocketModule socketModule;
     private final RoomRepository roomRepository;
 
-    public RoomService(RoomRepository roomRepository, SocketModule socketModule) {
+    public RoomService(RoomRepository roomRepository) {
         this.roomRepository = roomRepository;
-        this.socketModule = socketModule;
     }
 
     public boolean checkExistsById(UUID id) {
@@ -38,7 +36,7 @@ public class RoomService {
         roomRepository.deleteById(id);
     }
 
-    public Set<RoomInfoResponse> getPublicRooms() {
+    public Set<RoomInfoResponse> getPublicRooms(SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<Room> publicRooms = roomRepository.findAllByAprivateFalse();
         for (Room room : publicRooms) {
@@ -47,7 +45,7 @@ public class RoomService {
         return rooms;
     }
 
-    public Set<RoomInfoResponse> getRoomsByHost(User user) {
+    public Set<RoomInfoResponse> getRoomsByHost(User user, SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<Room> userRooms = roomRepository.findAllByHost(user);
         for (Room room : userRooms) {
@@ -56,7 +54,7 @@ public class RoomService {
         return rooms;
     }
 
-    public RoomInfoResponse getRoomByCode(String code) {
+    public RoomInfoResponse getRoomByCode(String code, SocketModule socketModule) {
         Room room = roomRepository.findByCode(code);
         if (room == null) {
             return null;

@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
+import www.aaltogetherbackend.modules.SocketModule;
 import www.aaltogetherbackend.payloads.requests.CreateRoomRequest;
 import www.aaltogetherbackend.payloads.requests.UpdateRoomRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
@@ -21,9 +22,11 @@ import java.util.Set;
 public class RoomController {
 
     private final RoomService roomService;
+    private final SocketModule socketModule;
 
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, SocketModule socketModule) {
         this.roomService = roomService;
+        this.socketModule = socketModule;
     }
 
     @PostMapping("/create")
@@ -95,18 +98,18 @@ public class RoomController {
     }
 
     public Set<RoomInfoResponse> getPublicRooms() {
-        return roomService.getPublicRooms();
+        return roomService.getPublicRooms(socketModule);
     }
 
     public Set<RoomInfoResponse> getPersonalRooms() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
-        return roomService.getRoomsByHost(user);
+        return roomService.getRoomsByHost(user, socketModule);
     }
 
     @GetMapping("/get-room-by-code")
     public ResponseEntity<?> getRoomByCode(@RequestParam String code) {
-        RoomInfoResponse room = roomService.getRoomByCode(code);
+        RoomInfoResponse room = roomService.getRoomByCode(code, socketModule);
         if (room == null) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
         }
