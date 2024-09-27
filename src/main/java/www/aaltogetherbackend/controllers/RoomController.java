@@ -46,7 +46,7 @@ public class RoomController {
             room.setCode(roomCode);
         }
         roomService.saveRoom(room);
-        return ResponseEntity.ok().body(room);
+        return ResponseEntity.ok().body(roomService.getRoomInfoResponse(room.getId(), socketModule));
     }
 
     @PatchMapping("/update")
@@ -84,7 +84,7 @@ public class RoomController {
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
-        return ResponseEntity.ok().body(room);
+        return ResponseEntity.ok().body(roomService.getRoomInfoResponse(room.getId(), socketModule));
     }
 
 

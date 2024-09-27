@@ -4,11 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import www.aaltogetherbackend.models.File;
-import www.aaltogetherbackend.payloads.responses.FileNoDataResponse;
+import www.aaltogetherbackend.payloads.responses.FileNoDataInterface;
 
 public interface FileRepository extends JpaRepository<File, Long> {
     @Query("SELECT f.id as id, f.name as name, f.type as type, f.uploader as uploader FROM File f WHERE f.id = :id")
-    FileNoDataResponse findFileNoDataById(Long id);
+    FileNoDataInterface findFileNoDataById(Long id);
 
     @Query("SELECT f.type FROM File f WHERE f.id = :id")
     String findTypeById(Long id);

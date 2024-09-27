@@ -7,5 +7,5 @@ public record LoginResponse(
         String jwt,
         @JsonProperty("refreshToken")
         String refreshToken,
-        UserInfoResponse user
+        UserInfoInterface user
 ) {}

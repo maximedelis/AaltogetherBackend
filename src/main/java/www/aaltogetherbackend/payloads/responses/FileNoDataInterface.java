@@ -1,8 +1,8 @@
 package www.aaltogetherbackend.payloads.responses;
 
-public interface FileNoDataResponse {
+public interface FileNoDataInterface {
     Long getId();
     String getName();
     String getType();
-    UserInfoResponse getUploader();
+    UsernameInfoInterface getUploader();
 }
