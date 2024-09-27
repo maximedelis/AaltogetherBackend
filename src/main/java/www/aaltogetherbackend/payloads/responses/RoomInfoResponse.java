@@ -2,6 +2,7 @@ package www.aaltogetherbackend.payloads.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
 import java.util.UUID;
 
 public record RoomInfoResponse(
@@ -11,5 +12,7 @@ public record RoomInfoResponse(
         @JsonProperty("private")
         boolean aprivate,
         @JsonProperty("maxUsers")
-        int maxUsers
+        int maxUsers,
+        String host,
+        Set<UsernameInfoResponse> connectedUsers
 ) {}
