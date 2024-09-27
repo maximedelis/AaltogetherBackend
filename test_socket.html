@@ -7,19 +7,20 @@
 <script>
     const chat = document.getElementById('chat');
     const hostIp = "localhost";
-    const roomUUID = "25961a76-5f3f-4862-afd8-80bb28fa98e1";
-    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNzI3MjY5NzA0LCJleHAiOjE3MjcyNzMzMDR9.xMsIuOvzak537EII4ocy5GlTKMYasvMK4y8a6xYAqmI";
+    const roomUUID = "0d614087-6bbe-49b7-9008-b69d130b2c83";
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiIsImlhdCI6MTcyNzQzNjg2NiwiZXhwIjoxNzI3NDQwNDY2fQ.jLew3Lo_8HwELCmuYhOLU6Ge1CY7TMqiX9zbPA5V-5o";
 
     const ws = io('http://' + hostIp +':8085', {
         autoConnect: false,
         query: {
             room: roomUUID,
             jwt: jwt
-        }
+        },
+        reconnection: false
     });
-    
+
     //ws.connect();
-    
+
     function sendCommand(command, value) {
         let message = {
             command: command,

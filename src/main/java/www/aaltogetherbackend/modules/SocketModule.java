@@ -60,6 +60,7 @@ public class SocketModule {
     private DataListener<SocketMessage> onMessageReceived() {
         return (senderClient, data, ackSender) -> {
             UUID roomUUID = UUID.fromString(senderClient.getHandshakeData().getSingleUrlParam("room"));
+
             log.info("Message received: {}", data.message());
             socketService.sendMessage(roomUUID,
                     senderClient,
@@ -89,6 +90,10 @@ public class SocketModule {
             if (!socketService.hasSpace(UUID.fromString(roomUUID), client)) {
                 log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), roomUUID);
                 client.disconnect();
+                return;
+            }
+
+            if (this.isInRoom(UUID.fromString(roomUUID), jwtUtils.getUsernameFromToken(jwt))) {
                 return;
             }
 

@@ -9,9 +9,7 @@ import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
-import www.aaltogetherbackend.modules.SocketModule;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -29,6 +27,10 @@ public class SocketService {
     }
 
     public void sendCommand(UUID room, SocketIOClient senderClient, CommandType command, String commandValue) {
+        if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
+            log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
+            return;
+        }
         log.info("Command sent: {}", command);
         for (
                 SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
@@ -39,6 +41,10 @@ public class SocketService {
     }
 
     public void sendMessage(UUID room, SocketIOClient senderClient, String message) {
+        if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
+            log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
+            return;
+        }
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {

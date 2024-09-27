@@ -32,8 +32,8 @@ public class EmailConfirmationTokenService {
     }
 
     @Transactional
-    public void deleteByUser(User user) {
-        emailConfirmationTokenRepository.deleteByUser(user);
+    public void delete(String token) {
+        emailConfirmationTokenRepository.deleteByToken(token);
     }
 
 }

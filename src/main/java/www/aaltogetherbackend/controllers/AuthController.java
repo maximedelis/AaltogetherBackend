@@ -125,6 +125,7 @@ public class AuthController {
         User user = emailConfirmationToken.get().getUser();
         user.setEmailVerified(true);
         userRepository.save(user);
+        emailConfirmationTokenService.delete(token);
         return ResponseEntity.ok().body(new MessageResponse("Email verified!"));
     }
 
