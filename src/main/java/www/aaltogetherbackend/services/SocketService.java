@@ -29,6 +29,8 @@ public class SocketService {
     public void sendCommand(UUID room, SocketIOClient senderClient, CommandType command, String commandValue) {
         if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
             log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "You are not in the room");
+            senderClient.disconnect();
             return;
         }
         log.info("Command sent: {}", command);
@@ -43,6 +45,8 @@ public class SocketService {
     public void sendMessage(UUID room, SocketIOClient senderClient, String message) {
         if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
             log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "You are not in the room");
+            senderClient.disconnect();
             return;
         }
         log.info("Message sent: {}", message);

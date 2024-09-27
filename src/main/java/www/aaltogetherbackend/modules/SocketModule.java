@@ -77,6 +77,7 @@ public class SocketModule {
 
             if (!jwtUtils.verifyToken(jwt)) {
                 log.info("Socket ID[{}] Invalid JWT", client.getSessionId().toString());
+                client.sendEvent("error", "Invalid JWT");
                 client.disconnect();
                 return;
             }
@@ -92,12 +93,14 @@ public class SocketModule {
 
             if (room == null) {
                 log.info("Socket ID[{}]  Room not found", client.getSessionId().toString());
+                client.sendEvent("error", "Room not found");
                 client.disconnect();
                 return;
             }
 
             if (!socketService.hasSpace(room.getId(), client)) {
                 log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), room.getId());
+                client.sendEvent("error", "Room is full");
                 client.disconnect();
                 return;
             }
@@ -105,7 +108,8 @@ public class SocketModule {
             String username = jwtUtils.getUsernameFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
 
             if (this.isInRoom(room.getId(), username)) {
-                log.info("Socket ID[{}] - room[{}]  Already in room", client.getSessionId().toString(), room.getId());
+                log.info("Socket ID[{}] - room[{}]  Already in this room", client.getSessionId().toString(), room.getId());
+                client.sendEvent("error", "Already in this room");
                 client.disconnect();
                 return;
             }

@@ -2,13 +2,15 @@
 
 <p id="commands"></p>
 
+<p id="error"></p>
+
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
 
 <script>
     const chat = document.getElementById('chat');
     const hostIp = "localhost";
-    const roomUUID = "3c9edf70-58dd-4068-be98-f09c3cde0d40";
-    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiIsImlhdCI6MTcyNzQ0MDc1MSwiZXhwIjoxNzI3NDQ0MzUxfQ.hIcpuOy5Qg0HlGl_hqCDrBZZWdkO3Hy-H4BpFGJXgyI";
+    const roomUUID = "c3bc5275-ad4d-45e0-ba73-bbefdeafe976";
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNzI3NDQwOTY3LCJleHAiOjE3Mjc0NDQ1Njd9.a-eWthZKb3Os409AW9AADMrN-rxnvJ1ErpIa6aPT4Jw";
 
     const ws = io('http://' + hostIp +':8085', {
         autoConnect: false,
@@ -63,5 +65,13 @@
     ws.on('get_command', function (data) {
         chat.innerHTML += '<br>' + data.command + ': ' + data.value;
         console.log(data);
+    });
+
+    ws.on('disconnect', function () {
+        chat.innerHTML = 'Disconnected';
+    });
+
+    ws.on('error', function (data) {
+        document.getElementById('error').innerHTML = data;
     });
 </script>
