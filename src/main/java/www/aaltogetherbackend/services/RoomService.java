@@ -38,7 +38,7 @@ public class RoomService {
             return null;
         }
         Set<FileNoDataInterface> sharedFiles = roomRepository.findAllSharedFilesById(room.getId());
-        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.isFileSharingEnabled(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
+        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.isFileSharingEnabled(), room.isChatEnabled(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
     }
 
     public void saveRoom(Room room) {

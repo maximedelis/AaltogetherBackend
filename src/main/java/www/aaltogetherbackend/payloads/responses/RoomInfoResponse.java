@@ -13,6 +13,8 @@ public record RoomInfoResponse(
         boolean aprivate,
         @JsonProperty("fileSharingEnabled")
         boolean isFileSharingEnabled,
+        @JsonProperty("chatEnabled")
+        boolean isChatEnabled,
         @JsonProperty("maxUsers")
         int maxUsers,
         String host,

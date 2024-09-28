@@ -21,8 +21,8 @@ public class Room {
     private String name;
 
     private boolean aprivate;
-    @Column(columnDefinition = "boolean default false")
     private boolean isFileSharingEnabled;
+    private boolean isChatEnabled;
 
     @Column(nullable = true, unique = true)
     private String code;
@@ -108,5 +108,13 @@ public class Room {
 
     public void setFileSharingEnabled(boolean fileSharingEnabled) {
         isFileSharingEnabled = fileSharingEnabled;
+    }
+
+    public boolean isChatEnabled() {
+        return isChatEnabled;
+    }
+
+    public void setChatEnabled(boolean chatEnabled) {
+        isChatEnabled = chatEnabled;
     }
 }

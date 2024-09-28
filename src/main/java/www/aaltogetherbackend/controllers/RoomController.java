@@ -40,6 +40,7 @@ public class RoomController {
         room.setAprivate(createRoomRequest.aprivate());
         room.setHost(user);
         room.setFileSharingEnabled(createRoomRequest.isFileSharingEnabled());
+        room.setChatEnabled(createRoomRequest.isChatEnabled());
         room.setMaxUsers(createRoomRequest.maxUsers());
         if (createRoomRequest.aprivate()) {
             Random random = new Random();
@@ -84,6 +85,7 @@ public class RoomController {
         }
 
         room.setFileSharingEnabled(updateRoomRequest.isFileSharingEnabled());
+        room.setChatEnabled(updateRoomRequest.isChatEnabled());
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
