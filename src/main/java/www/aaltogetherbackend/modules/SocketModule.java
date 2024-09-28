@@ -12,7 +12,6 @@ import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketJoinRoom;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.Room;
-import www.aaltogetherbackend.payloads.responses.UsernameInfoResponse;
 import www.aaltogetherbackend.services.CommandHandlerService;
 import www.aaltogetherbackend.services.JwtUtils;
 import www.aaltogetherbackend.services.RoomService;
@@ -135,21 +134,21 @@ public class SocketModule {
         };
     }
 
-    public Set<UsernameInfoResponse> getUsersInRoom(UUID room) {
-        Set<UsernameInfoResponse> users = new HashSet<>();
+    public Set<String> getUsersInRoom(UUID room) {
+        Set<String> users = new HashSet<>();
         Collection<SocketIOClient> clients = socketIOServer.getNamespace("").getRoomOperations(room.toString()).getClients();
         for (SocketIOClient client : clients) {
             String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
             String username = jwtUtils.getUsernameFromToken(jwt);
-            users.add(new UsernameInfoResponse(username));
+            users.add(username);
         }
         return users;
     }
 
     public boolean isInRoom(UUID room, String username) {
-        Set<UsernameInfoResponse> users = this.getUsersInRoom(room);
-        for (UsernameInfoResponse user : users) {
-            if (user.username().equals(username)) {
+        Set<String> users = this.getUsersInRoom(room);
+        for (String user : users) {
+            if (user.equals(username)) {
                 return true;
             }
         }
