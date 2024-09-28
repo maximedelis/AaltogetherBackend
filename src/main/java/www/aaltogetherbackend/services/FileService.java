@@ -36,6 +36,10 @@ public class FileService {
         return fileRepository.findFileNoDataById(id);
     }
 
+    public File getFileById(Long id) {
+        return fileRepository.findById(id).orElse(null);
+    }
+
     public void updateFile(Long id, String name) {
         fileRepository.updateNameById(id, name);
     }

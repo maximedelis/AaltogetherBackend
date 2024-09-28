@@ -5,6 +5,7 @@ import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.modules.SocketModule;
 import www.aaltogetherbackend.payloads.responses.FileNoDataInterface;
+import www.aaltogetherbackend.payloads.responses.RoomInfoInterface;
 import www.aaltogetherbackend.payloads.responses.RoomInfoResponse;
 import www.aaltogetherbackend.repositories.RoomRepository;
 
@@ -16,9 +17,11 @@ import java.util.UUID;
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final FileService fileService;
 
-    public RoomService(RoomRepository roomRepository) {
+    public RoomService(RoomRepository roomRepository, FileService fileService) {
         this.roomRepository = roomRepository;
+        this.fileService = fileService;
     }
 
     public boolean checkExistsById(UUID id) {
@@ -35,7 +38,7 @@ public class RoomService {
             return null;
         }
         Set<FileNoDataInterface> sharedFiles = roomRepository.findAllSharedFilesById(room.getId());
-        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
+        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.isFileSharingEnabled(), room.getMaxUsers(), room.getHost().getUsername(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
     }
 
     public void saveRoom(Room room) {
@@ -48,8 +51,8 @@ public class RoomService {
 
     public Set<RoomInfoResponse> getPublicRooms(SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
-        Set<Room> publicRooms = roomRepository.findAllByAprivateFalse();
-        for (Room room : publicRooms) {
+        Set<RoomInfoInterface> publicRooms = roomRepository.findAllByAprivateFalse();
+        for (RoomInfoInterface room : publicRooms) {
             rooms.add(this.getRoomInfoResponse(room.getId(), socketModule));
         }
         return rooms;
@@ -57,15 +60,15 @@ public class RoomService {
 
     public Set<RoomInfoResponse> getRoomsByHost(User user, SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
-        Set<Room> userRooms = roomRepository.findAllByHost(user);
-        for (Room room : userRooms) {
+        Set<RoomInfoInterface> userRooms = roomRepository.findAllByHost(user);
+        for (RoomInfoInterface room : userRooms) {
             rooms.add(this.getRoomInfoResponse(room.getId(), socketModule));
         }
         return rooms;
     }
 
     public RoomInfoResponse getRoomByCode(String code, SocketModule socketModule) {
-        Room room = roomRepository.findByCode(code);
+        RoomInfoInterface room = roomRepository.findByCode(code);
         if (room == null) {
             return null;
         }
@@ -77,8 +80,21 @@ public class RoomService {
         return room != null && room.getHost().getId().equals(user.getId());
     }
 
+    public boolean isSharingEnabled(UUID roomId) {
+        Room room = roomRepository.findById(roomId).orElse(null);
+        return room != null && room.isFileSharingEnabled();
+    }
+
     public boolean isFileShared(UUID roomId, long fileId) {
         return roomRepository.existsByIdAndSharedFilesId(roomId, fileId);
+    }
+
+    public void addFileToRoom(UUID roomId, long fileId) {
+        Room room = roomRepository.findById(roomId).orElse(null);
+        if (room != null) {
+            room.addSharedFile(fileService.getFileById(fileId));
+            this.saveRoom(room);
+        }
     }
 
 }

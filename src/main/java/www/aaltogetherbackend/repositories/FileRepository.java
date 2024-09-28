@@ -7,7 +7,7 @@ import www.aaltogetherbackend.models.File;
 import www.aaltogetherbackend.payloads.responses.FileNoDataInterface;
 
 public interface FileRepository extends JpaRepository<File, Long> {
-    @Query("SELECT f.id as id, f.name as name, f.type as type, f.uploader as uploader FROM File f WHERE f.id = :id")
+    @Query("SELECT f.id as id, f.name as name, f.type as type, f.uploader.username as uploader FROM File f WHERE f.id = :id")
     FileNoDataInterface findFileNoDataById(Long id);
 
     @Query("SELECT f.type FROM File f WHERE f.id = :id")

@@ -1,5 +1,6 @@
 package www.aaltogetherbackend.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +20,6 @@ import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
 import www.aaltogetherbackend.services.FileService;
 import www.aaltogetherbackend.services.RoomService;
-import www.aaltogetherbackend.services.SocketService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +54,7 @@ public class FileController {
     }
 
     @PatchMapping("/update/{id}")
-    public ResponseEntity<?> updateFile(@PathVariable Long id, @RequestBody UpdateFileRequest updateFileRequest) {
+    public ResponseEntity<?> updateFile(@PathVariable Long id, @Valid @RequestBody UpdateFileRequest updateFileRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
@@ -144,7 +144,7 @@ public class FileController {
     }
 
     @GetMapping("/play")
-    public ResponseEntity<StreamingResponseBody> streamFile(@RequestBody PlayRequest playRequest,
+    public ResponseEntity<StreamingResponseBody> streamFile(@Valid @RequestBody PlayRequest playRequest,
                                                              @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

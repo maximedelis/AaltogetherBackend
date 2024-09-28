@@ -12,5 +12,7 @@ public record CreateRoomRequest(
         @Min(value = 2, message = "Room should have 2 users minimum")
         @Max(value = 16, message = "Room should have 16 users maximum")
         @JsonProperty("maxUsers")
-        int maxUsers
+        int maxUsers,
+        @JsonProperty("fileSharingEnabled")
+        boolean isFileSharingEnabled
 ) {}

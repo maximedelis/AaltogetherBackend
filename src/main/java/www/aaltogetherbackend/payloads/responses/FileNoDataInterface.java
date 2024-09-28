@@ -4,5 +4,5 @@ public interface FileNoDataInterface {
     Long getId();
     String getName();
     String getType();
-    UsernameInfoInterface getUploader();
+    String getUploader();
 }

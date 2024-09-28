@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.modules.SocketModule;
+import www.aaltogetherbackend.payloads.requests.AddFilesRequest;
 import www.aaltogetherbackend.payloads.requests.CreateRoomRequest;
 import www.aaltogetherbackend.payloads.requests.UpdateRoomRequest;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
@@ -38,6 +39,7 @@ public class RoomController {
         room.setName(createRoomRequest.name());
         room.setAprivate(createRoomRequest.aprivate());
         room.setHost(user);
+        room.setFileSharingEnabled(createRoomRequest.isFileSharingEnabled());
         room.setMaxUsers(createRoomRequest.maxUsers());
         if (createRoomRequest.aprivate()) {
             Random random = new Random();
@@ -81,6 +83,7 @@ public class RoomController {
             room.setCode(null);
         }
 
+        room.setFileSharingEnabled(updateRoomRequest.isFileSharingEnabled());
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
@@ -114,6 +117,23 @@ public class RoomController {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
         }
         return ResponseEntity.ok().body(room);
+    }
+
+    @PostMapping("/add-files")
+    public ResponseEntity<?> addFilesToRoom(@Valid @RequestBody AddFilesRequest addFilesRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        if (!roomService.checkExistsById(addFilesRequest.roomId())) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
+        }
+        if (!roomService.isHost(addFilesRequest.roomId(), user) && !roomService.isSharingEnabled(addFilesRequest.roomId())) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("You cannot add files to this room"));
+        }
+
+        for (Long fileId : addFilesRequest.fileIds()) {
+            roomService.addFileToRoom(addFilesRequest.roomId(), fileId);
+        }
+        return ResponseEntity.ok().body(roomService.getRoomInfoResponse(addFilesRequest.roomId(), socketModule));
     }
 
 }

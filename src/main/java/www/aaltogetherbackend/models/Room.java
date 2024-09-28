@@ -21,6 +21,8 @@ public class Room {
     private String name;
 
     private boolean aprivate;
+    @Column(columnDefinition = "boolean default false")
+    private boolean isFileSharingEnabled;
 
     @Column(nullable = true, unique = true)
     private String code;
@@ -43,6 +45,10 @@ public class Room {
 
     public void setSharedFiles(Set<File> sharedFiles) {
         this.sharedFiles = sharedFiles;
+    }
+
+    public void addSharedFile(File file) {
+        this.sharedFiles.add(file);
     }
 
     public Room() {
@@ -94,5 +100,13 @@ public class Room {
 
     public void setMaxUsers(int maxUsers) {
         this.maxUsers = maxUsers;
+    }
+
+    public boolean isFileSharingEnabled() {
+        return isFileSharingEnabled;
+    }
+
+    public void setFileSharingEnabled(boolean fileSharingEnabled) {
+        isFileSharingEnabled = fileSharingEnabled;
     }
 }
