@@ -114,6 +114,7 @@ public class SocketModule {
             }
 
             client.joinRoom(room.getId().toString());
+            client.sendEvent("room_info", roomService.getRoomInfoResponse(room.getId(), this));
             socketService.sendMessage(room.getId(), client, username + " has joined the room.");
             log.info("Socket ID[{}] - room[{}]  Joined room", client.getSessionId().toString(), room.getId());
         };
@@ -153,6 +154,16 @@ public class SocketModule {
             }
         }
         return false;
+    }
+
+    public void sendRoomUpdateInfo(UUID room) {
+        Set<String> users = this.getUsersInRoom(room);
+        for (String user : users) {
+            Collection<SocketIOClient> clients = socketIOServer.getNamespace("").getRoomOperations(room.toString()).getClients();
+            for (SocketIOClient client : clients) {
+                client.sendEvent("room_info", roomService.getRoomInfoResponse(room, this));
+            }
+        }
     }
 
 }

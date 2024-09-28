@@ -87,6 +87,8 @@ public class RoomController {
         room.setMaxUsers(updateRoomRequest.maxUsers());
         roomService.saveRoom(room);
 
+        socketModule.sendRoomUpdateInfo(room.getId());
+
         return ResponseEntity.ok().body(roomService.getRoomInfoResponse(room.getId(), socketModule));
     }
 
@@ -133,6 +135,9 @@ public class RoomController {
         for (Long fileId : addFilesRequest.fileIds()) {
             roomService.addFileToRoom(addFilesRequest.roomId(), fileId);
         }
+
+        socketModule.sendRoomUpdateInfo(addFilesRequest.roomId());
+
         return ResponseEntity.ok().body(roomService.getRoomInfoResponse(addFilesRequest.roomId(), socketModule));
     }
 
