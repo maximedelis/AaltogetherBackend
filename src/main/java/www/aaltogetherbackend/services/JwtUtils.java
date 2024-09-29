@@ -2,7 +2,6 @@ package www.aaltogetherbackend.services;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
