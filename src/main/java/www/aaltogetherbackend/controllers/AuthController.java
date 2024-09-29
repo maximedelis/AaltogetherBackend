@@ -22,6 +22,7 @@ import www.aaltogetherbackend.repositories.UserRepository;
 import www.aaltogetherbackend.services.*;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -54,13 +55,10 @@ public class AuthController {
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(),
                         loginRequest.password()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateToken(loginRequest.username());
-
         User user = (User) authentication.getPrincipal();
+        UUID userId = user.getId();
 
-        if (!user.isEmailVerified()) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Email is not verified!"));
-        }
+        String jwt = jwtUtils.generateToken(loginRequest.username(), userId);
 
         refreshTokenService.deleteByUser(user);
         String refreshToken = refreshTokenService.generateRefreshToken(loginRequest.username());
@@ -79,6 +77,7 @@ public class AuthController {
         user.setUsername(signupRequest.username());
         user.setPassword(encoder.encode(signupRequest.password()));
         user.setEmail(signupRequest.email());
+        user.setEnabled(false);
 
         userRepository.save(user);
 
@@ -99,8 +98,9 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Refresh token is expired!"));
         }
         String username = refreshToken.get().getUser().getUsername();
+        UUID userId = refreshToken.get().getUser().getId();
 
-        String jwt = jwtUtils.generateToken(username);
+        String jwt = jwtUtils.generateToken(username, userId);
         return ResponseEntity.ok().body(new LoginResponse("Token refreshed!", jwt, refreshTokenRequest.refreshToken(), userRepository.findUserInfoByUsername(username)));
     }
 
@@ -123,6 +123,7 @@ public class AuthController {
         }
 
         User user = emailConfirmationToken.get().getUser();
+        user.setEnabled(true);
         user.setEmailVerified(true);
         userRepository.save(user);
         emailConfirmationTokenService.delete(token);

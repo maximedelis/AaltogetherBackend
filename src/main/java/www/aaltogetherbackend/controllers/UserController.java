@@ -1,6 +1,7 @@
 package www.aaltogetherbackend.controllers;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,7 +14,9 @@ import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.LoginResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
 import www.aaltogetherbackend.repositories.UserRepository;
+import www.aaltogetherbackend.services.EmailConfirmationTokenService;
 import www.aaltogetherbackend.services.JwtUtils;
+import www.aaltogetherbackend.services.MailService;
 
 @RestController
 @RequestMapping("/api/user")
@@ -22,12 +25,19 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final EmailConfirmationTokenService emailConfirmationTokenService;
+    private final MailService mailService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailConfirmationTokenService emailConfirmationTokenService, MailService mailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.emailConfirmationTokenService = emailConfirmationTokenService;
+        this.mailService = mailService;
     }
+
+    @Value("${FRONTEND_PORT}")
+    private String frontPort;
 
     @GetMapping("/me")
     public ResponseEntity<?> me() {
@@ -40,6 +50,9 @@ public class UserController {
     public ResponseEntity<?> updatePassword(@Valid @RequestBody UpdatePasswordRequest updatePasswordRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
+
+        if (!user.isEmailVerified())
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Please verify your email first"));
 
         if (!passwordEncoder.matches(updatePasswordRequest.oldPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Old password is incorrect"));
@@ -54,13 +67,19 @@ public class UserController {
     @PatchMapping("/update")
     public ResponseEntity<?> update(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
+        User user = (User) authentication.getPrincipal();
 
-        currentUser.setUsername(updateUserRequest.username());
-        currentUser.setEmail(updateUserRequest.email());
-        userRepository.save(currentUser);
+        user.setUsername(updateUserRequest.username());
+        if (!user.getEmail().equals(updateUserRequest.email())) {
+            user.setEmailVerified(false);
+            user.setEmail(updateUserRequest.email());
+            String token = emailConfirmationTokenService.generateEmailVerificationToken(user);
+            mailService.SendMail(updateUserRequest.email(), "Email Verification", "Click here to verify your email: http://localhost:" + frontPort + "/api/auth/verify-email?token=" + token);
+        }
 
-        String jwt = jwtUtils.generateToken(currentUser.getUsername());
+        userRepository.save(user);
+
+        String jwt = jwtUtils.generateToken(user.getUsername(), user.getId());
 
         return ResponseEntity.ok().body(new LoginResponse("User updated successfully", jwt, null, userRepository.findUserInfoByUsername(updateUserRequest.username())));
     }

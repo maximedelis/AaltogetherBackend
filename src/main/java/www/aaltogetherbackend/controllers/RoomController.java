@@ -130,7 +130,7 @@ public class RoomController {
         if (!roomService.checkExistsById(addFilesRequest.roomId())) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Room does not exist"));
         }
-        if (!roomService.isHost(addFilesRequest.roomId(), user) && !roomService.isSharingEnabled(addFilesRequest.roomId())) {
+        if (!roomService.isHost(addFilesRequest.roomId(), user.getId()) && !roomService.isSharingEnabled(addFilesRequest.roomId())) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("You cannot add files to this room"));
         }
 

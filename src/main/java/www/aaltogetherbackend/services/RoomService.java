@@ -79,8 +79,8 @@ public class RoomService {
         return this.getRoomInfoResponse(room.getId(), socketModule);
     }
 
-    public boolean isHost(UUID roomId, User user) {
-        return roomRepository.getHostIdById(roomId).equals(user.getId());
+    public boolean isHost(UUID roomId, UUID userId) {
+        return roomRepository.getHostIdById(roomId).equals(userId);
     }
 
     public boolean isChatEnabled(UUID roomId) {

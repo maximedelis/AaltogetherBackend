@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.repositories.UserRepository;
 
+import java.util.UUID;
+
 @Service
 public class UserService implements UserDetailsService {
 
@@ -26,6 +28,10 @@ public class UserService implements UserDetailsService {
 
     public boolean checkExists(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    public User loadById(UUID id) {
+        return userRepository.findById(id).orElse(null);
     }
 
 }

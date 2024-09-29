@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.commands.CommandType;
 import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketMessage;
-import www.aaltogetherbackend.models.Room;
-import www.aaltogetherbackend.models.User;
 
 import java.util.UUID;
 
@@ -44,10 +42,9 @@ public class SocketService {
             return;
         }
 
-        String jwt = senderClient.getHandshakeData().getSingleUrlParam("jwt");
-        String username = jwtUtils.getUsernameFromToken(jwt);
+        UUID id = jwtUtils.getIdFromToken(senderClient.getHandshakeData().getSingleUrlParam("jwt"));
 
-        if (!roomService.isChatEnabled(room) && !roomService.isHost(room, userService.loadUserByUsername(username))) {
+        if (!roomService.isChatEnabled(room) && !roomService.isHost(room, id)) {
             log.info("Client[{}] - Chat is disabled", senderClient.getSessionId().toString());
             senderClient.sendEvent("error", "Chat is disabled");
             return;
@@ -85,10 +82,9 @@ public class SocketService {
             return;
         }
 
-        String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
-        String username = jwtUtils.getUsernameFromToken(jwt);
+        UUID id = jwtUtils.getIdFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
 
-        if (!roomService.isHost(room, userService.loadUserByUsername(username))) {
+        if (!roomService.isHost(room, id)) {
             log.info("Client[{}] - Not host", client.getSessionId().toString());
             client.sendEvent("error", "You are not the host");
             return;
@@ -103,10 +99,9 @@ public class SocketService {
     }
 
     public void kickUser(UUID roomId, SocketIOClient client, String username) {
-        String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
-        String host = jwtUtils.getUsernameFromToken(jwt);
-        User hostUser = userService.loadUserByUsername(host);
-        if (roomService.isHost(roomId, hostUser)) {
+        UUID id = jwtUtils.getIdFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
+        String host = userService.loadById(id).getUsername();
+        if (roomService.isHost(roomId, id)) {
             for (SocketIOClient clients : client.getNamespace().getRoomOperations(roomId.toString()).getClients()) {
                 String clientJwt = clients.getHandshakeData().getSingleUrlParam("jwt");
                 String clientUsername = jwtUtils.getUsernameFromToken(clientJwt);

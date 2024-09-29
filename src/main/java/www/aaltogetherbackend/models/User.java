@@ -53,7 +53,14 @@ public class User implements UserDetails {
         return password;
     }
 
-    private boolean isEmailVerified = false;
+    public boolean isEnabled;
+
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    private boolean isEmailVerified;
 
     public boolean isEmailVerified() {
         return isEmailVerified;
@@ -92,4 +99,7 @@ public class User implements UserDetails {
         return id;
     }
 
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
+    }
 }

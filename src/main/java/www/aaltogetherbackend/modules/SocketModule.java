@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketJoinRoom;
 import www.aaltogetherbackend.commands.SocketMessage;
-import www.aaltogetherbackend.services.CommandHandlerService;
-import www.aaltogetherbackend.services.JwtUtils;
-import www.aaltogetherbackend.services.RoomService;
-import www.aaltogetherbackend.services.SocketService;
+import www.aaltogetherbackend.services.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,8 +28,9 @@ public class SocketModule {
     private final SocketService socketService;
     private final SocketIOServer socketIOServer;
     private final CommandHandlerService commandHandlerService;
+    private final UserService userService;
 
-    public SocketModule(SocketIOServer server, SocketService socketService, RoomService roomService, JwtUtils jwtUtils, SocketIOServer socketIOServer, CommandHandlerService commandHandlerService) {
+    public SocketModule(SocketIOServer server, SocketService socketService, RoomService roomService, JwtUtils jwtUtils, SocketIOServer socketIOServer, CommandHandlerService commandHandlerService, UserService userService) {
         this.socketService = socketService;
         this.roomService = roomService;
         this.jwtUtils = jwtUtils;
@@ -44,6 +42,7 @@ public class SocketModule {
         server.addEventListener("command", SocketCommand.class, onCommandReceived());
         server.addEventListener("message", SocketMessage.class, onMessageReceived());
         server.addEventListener("join", SocketJoinRoom.class, onJoinRoom());
+        this.userService = userService;
     }
 
     private DataListener<SocketCommand> onCommandReceived() {
@@ -100,7 +99,8 @@ public class SocketModule {
                 return;
             }
 
-            String username = jwtUtils.getUsernameFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
+            UUID id = jwtUtils.getIdFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
+            String username = userService.loadById(id).getUsername();
 
             if (this.isInRoom(data.room(), username)) {
                 log.info("Socket ID[{}] - room[{}]  Already in this room", client.getSessionId().toString(), data.room());
@@ -119,8 +119,8 @@ public class SocketModule {
     private DisconnectListener onDisconnected() {
         return client -> {
             UUID roomUUID = UUID.fromString(client.getHandshakeData().getSingleUrlParam("room"));
-            String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
-            String username = jwtUtils.getUsernameFromToken(jwt);
+            UUID id = jwtUtils.getIdFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
+            String username = userService.loadById(id).getUsername();
 
             if (!this.isInRoom(roomUUID, username)) {
                 socketService.sendServerMessage(roomUUID, client, username + " has left the room.");
@@ -135,8 +135,8 @@ public class SocketModule {
         Set<String> users = new HashSet<>();
         Collection<SocketIOClient> clients = socketIOServer.getNamespace("").getRoomOperations(room.toString()).getClients();
         for (SocketIOClient client : clients) {
-            String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
-            String username = jwtUtils.getUsernameFromToken(jwt);
+            UUID id = jwtUtils.getIdFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
+            String username = userService.loadById(id).getUsername();
             users.add(username);
         }
         return users;
