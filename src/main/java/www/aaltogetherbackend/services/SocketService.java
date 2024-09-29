@@ -27,10 +27,7 @@ public class SocketService {
     }
 
     public void sendCommand(UUID room, SocketIOClient senderClient, CommandType command, String commandValue) {
-        if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
-            log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
-            senderClient.sendEvent("error", "You are not in the room");
-            senderClient.disconnect();
+        if (this.notInRoom(room, senderClient)) {
             return;
         }
         log.info("Command sent: {}", command);
@@ -43,10 +40,7 @@ public class SocketService {
     }
 
     public void sendMessage(UUID room, SocketIOClient senderClient, String message) {
-        if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
-            log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
-            senderClient.sendEvent("error", "You are not in the room");
-            senderClient.disconnect();
+        if (this.notInRoom(room, senderClient)) {
             return;
         }
 
@@ -66,7 +60,7 @@ public class SocketService {
         }
     }
 
-    public void sendDisconnectMessage(UUID room, SocketIOClient senderClient, String message) {
+    public void sendServerMessage(UUID room, SocketIOClient senderClient, String message) {
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {
@@ -83,11 +77,23 @@ public class SocketService {
     }
 
     public boolean hasSpace(UUID room, SocketIOClient client) {
-        Room currentRoom = roomService.getRoom(room);
-        return client.getNamespace().getRoomOperations(room.toString()).getClients().size() < currentRoom.getMaxUsers() + 1;
+        return client.getNamespace().getRoomOperations(room.toString()).getClients().size() < roomService.getMaxUsers(room) + 1;
     }
 
     public void endSession(UUID room, SocketIOClient client) {
+        if (this.notInRoom(room, client)) {
+            return;
+        }
+
+        String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
+        String username = jwtUtils.getUsernameFromToken(jwt);
+
+        if (!roomService.isHost(room, userService.loadUserByUsername(username))) {
+            log.info("Client[{}] - Not host", client.getSessionId().toString());
+            client.sendEvent("error", "You are not the host");
+            return;
+        }
+
         for (SocketIOClient clients : client.getNamespace().getRoomOperations(room.toString()).getClients()) {
             clients.disconnect();
         }
@@ -109,6 +115,16 @@ public class SocketService {
                 }
             }
         }
+    }
+
+    public boolean notInRoom(UUID room, SocketIOClient senderClient) {
+        if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
+            log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "You are not in the room");
+            senderClient.disconnect();
+            return true;
+        }
+        return false;
     }
 
 }

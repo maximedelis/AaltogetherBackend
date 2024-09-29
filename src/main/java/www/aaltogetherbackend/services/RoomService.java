@@ -49,6 +49,10 @@ public class RoomService {
         roomRepository.deleteById(id);
     }
 
+    public int getMaxUsers(UUID id) {
+        return roomRepository.getMaxUsersById(id);
+    }
+
     public Set<RoomInfoResponse> getPublicRooms(SocketModule socketModule) {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<RoomInfoInterface> publicRooms = roomRepository.findAllByAprivateFalse();
@@ -76,18 +80,15 @@ public class RoomService {
     }
 
     public boolean isHost(UUID roomId, User user) {
-        Room room = roomRepository.findById(roomId).orElse(null);
-        return room != null && room.getHost().getId().equals(user.getId());
+        return roomRepository.getHostIdById(roomId).equals(user.getId());
     }
 
     public boolean isChatEnabled(UUID roomId) {
-        Room room = roomRepository.findById(roomId).orElse(null);
-        return room != null && room.isChatEnabled();
+        return roomRepository.isChatEnabledById(roomId);
     }
 
     public boolean isSharingEnabled(UUID roomId) {
-        Room room = roomRepository.findById(roomId).orElse(null);
-        return room != null && room.isFileSharingEnabled();
+        return roomRepository.isFileSharingEnabledById(roomId);
     }
 
     public boolean isFileShared(UUID roomId, long fileId) {

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketJoinRoom;
 import www.aaltogetherbackend.commands.SocketMessage;
-import www.aaltogetherbackend.models.Room;
 import www.aaltogetherbackend.services.CommandHandlerService;
 import www.aaltogetherbackend.services.JwtUtils;
 import www.aaltogetherbackend.services.RoomService;
@@ -69,7 +68,6 @@ public class SocketModule {
         };
     }
 
-    // Handles the connection before joining a room
     private ConnectListener onConnected() {
         return (client) -> {
             String jwt = client.getHandshakeData().getSingleUrlParam("jwt");
@@ -85,20 +83,18 @@ public class SocketModule {
         };
     }
 
-    // Handles the connection after joining a room
     private DataListener<SocketJoinRoom> onJoinRoom() {
         return (client, data, ackSender) -> {
-            Room room = roomService.getRoom(data.room());
 
-            if (room == null) {
+            if (!roomService.checkExistsById(data.room())) {
                 log.info("Socket ID[{}]  Room not found", client.getSessionId().toString());
                 client.sendEvent("error", "Room not found");
                 client.disconnect();
                 return;
             }
 
-            if (!socketService.hasSpace(room.getId(), client)) {
-                log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), room.getId());
+            if (!socketService.hasSpace(data.room(), client)) {
+                log.info("Socket ID[{}] - room[{}]  Room is full", client.getSessionId().toString(), data.room());
                 client.sendEvent("error", "Room is full");
                 client.disconnect();
                 return;
@@ -106,17 +102,17 @@ public class SocketModule {
 
             String username = jwtUtils.getUsernameFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
 
-            if (this.isInRoom(room.getId(), username)) {
-                log.info("Socket ID[{}] - room[{}]  Already in this room", client.getSessionId().toString(), room.getId());
+            if (this.isInRoom(data.room(), username)) {
+                log.info("Socket ID[{}] - room[{}]  Already in this room", client.getSessionId().toString(), data.room());
                 client.sendEvent("error", "Already in this room");
                 client.disconnect();
                 return;
             }
 
-            client.joinRoom(room.getId().toString());
-            client.sendEvent("room_info", roomService.getRoomInfoResponse(room.getId(), this));
-            socketService.sendMessage(room.getId(), client, username + " has joined the room.");
-            log.info("Socket ID[{}] - room[{}]  Joined room", client.getSessionId().toString(), room.getId());
+            client.joinRoom(data.room().toString());
+            client.sendEvent("room_info", roomService.getRoomInfoResponse(data.room(), this));
+            socketService.sendServerMessage(data.room(), client, username + " has joined the room.");
+            log.info("Socket ID[{}] - room[{}]  Joined room", client.getSessionId().toString(), data.room());
         };
     }
 
@@ -127,7 +123,7 @@ public class SocketModule {
             String username = jwtUtils.getUsernameFromToken(jwt);
 
             if (!this.isInRoom(roomUUID, username)) {
-                socketService.sendDisconnectMessage(roomUUID, client, username + " has left the room.");
+                socketService.sendServerMessage(roomUUID, client, username + " has left the room.");
             }
 
             socketService.deleteRoomIfEmpty(roomUUID, client);
@@ -157,12 +153,9 @@ public class SocketModule {
     }
 
     public void sendRoomUpdateInfo(UUID room) {
-        Set<String> users = this.getUsersInRoom(room);
-        for (String user : users) {
-            Collection<SocketIOClient> clients = socketIOServer.getNamespace("").getRoomOperations(room.toString()).getClients();
-            for (SocketIOClient client : clients) {
-                client.sendEvent("room_info", roomService.getRoomInfoResponse(room, this));
-            }
+        Collection<SocketIOClient> clients = socketIOServer.getNamespace("").getRoomOperations(room.toString()).getClients();
+        for (SocketIOClient client : clients) {
+            client.sendEvent("room_info", roomService.getRoomInfoResponse(room, this));
         }
     }
 
