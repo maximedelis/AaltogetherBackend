@@ -18,7 +18,8 @@ public class UserService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    public User loadUserByUsername(String username) throws UsernameNotFoundException {
+    // Mandatory method for UserDetailsService
+    public User loadUserByUsername(String username) {
         if (checkExists(username)) {
             return userRepository.findByUsername(username);
         } else {

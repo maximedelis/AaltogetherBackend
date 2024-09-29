@@ -17,6 +17,7 @@ import www.aaltogetherbackend.services.JwtUtils;
 import www.aaltogetherbackend.services.UserService;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class TokenFilter extends OncePerRequestFilter {
 
@@ -66,8 +67,8 @@ public class TokenFilter extends OncePerRequestFilter {
             if (jwtUtils.verifyToken(token)) {
                 System.out.println("token is valid");
 
-                String username = jwtUtils.getUsernameFromToken(token);
-                User user = userService.loadUserByUsername(username);
+                UUID userId = jwtUtils.getIdFromToken(token);
+                User user = userService.loadById(userId);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
