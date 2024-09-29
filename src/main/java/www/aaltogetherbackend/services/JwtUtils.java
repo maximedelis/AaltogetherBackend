@@ -26,8 +26,6 @@ public class JwtUtils {
     public boolean verifyToken(String token) {
         try {
             Jwts.parser().verifyWith(jwtSecret).build().parseSignedClaims(token);
-            String username = this.getUsernameFromToken(token);
-
             return true;
         }
         catch (Exception e) {
@@ -43,24 +41,20 @@ public class JwtUtils {
         return null;
     }
 
-    public boolean isValid(String token) {
+    public boolean isExpired(String token) {
         try {
             Jwts.parser().verifyWith(jwtSecret).build().parseSignedClaims(token);
             return false;
         }
-        catch (ExpiredJwtException | SignatureException e) {
+        catch (ExpiredJwtException e) {
             return true;
+        }
+        catch (Exception e) {
+            return false;
         }
     }
 
-    public String getUsernameFromToken(String token) {
-        assert this.isValid(token);
-        return Jwts.parser().verifyWith(jwtSecret).build()
-                .parseSignedClaims(token).getPayload().getSubject();
-    }
-
     public UUID getIdFromToken(String token) {
-        assert this.isValid(token);
         return UUID.fromString(Jwts.parser().verifyWith(jwtSecret).build()
                 .parseSignedClaims(token).getPayload().get("id", String.class));
     }

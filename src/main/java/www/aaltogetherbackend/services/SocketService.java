@@ -53,7 +53,7 @@ public class SocketService {
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {
-            clients.sendEvent("get_message", new SocketMessage(message));
+            clients.sendEvent("get_message", new SocketMessage(userService.loadById(id).getUsername() + ": " + message));
         }
     }
 
@@ -100,11 +100,10 @@ public class SocketService {
 
     public void kickUser(UUID roomId, SocketIOClient client, String username) {
         UUID id = jwtUtils.getIdFromToken(client.getHandshakeData().getSingleUrlParam("jwt"));
-        String host = userService.loadById(id).getUsername();
         if (roomService.isHost(roomId, id)) {
             for (SocketIOClient clients : client.getNamespace().getRoomOperations(roomId.toString()).getClients()) {
-                String clientJwt = clients.getHandshakeData().getSingleUrlParam("jwt");
-                String clientUsername = jwtUtils.getUsernameFromToken(clientJwt);
+                UUID clientId = jwtUtils.getIdFromToken(clients.getHandshakeData().getSingleUrlParam("jwt"));
+                String clientUsername = userService.loadById(clientId).getUsername();
                 if (clientUsername.equals(username)) {
                     clients.disconnect();
                 }
