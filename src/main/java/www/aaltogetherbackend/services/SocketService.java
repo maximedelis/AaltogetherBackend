@@ -49,6 +49,16 @@ public class SocketService {
             senderClient.disconnect();
             return;
         }
+
+        String jwt = senderClient.getHandshakeData().getSingleUrlParam("jwt");
+        String username = jwtUtils.getUsernameFromToken(jwt);
+
+        if (!roomService.isChatEnabled(room) && !roomService.isHost(room, userService.loadUserByUsername(username))) {
+            log.info("Client[{}] - Chat is disabled", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "Chat is disabled");
+            return;
+        }
+
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {

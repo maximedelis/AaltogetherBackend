@@ -80,6 +80,11 @@ public class RoomService {
         return room != null && room.getHost().getId().equals(user.getId());
     }
 
+    public boolean isChatEnabled(UUID roomId) {
+        Room room = roomRepository.findById(roomId).orElse(null);
+        return room != null && room.isChatEnabled();
+    }
+
     public boolean isSharingEnabled(UUID roomId) {
         Room room = roomRepository.findById(roomId).orElse(null);
         return room != null && room.isFileSharingEnabled();
