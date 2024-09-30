@@ -10,11 +10,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import www.aaltogetherbackend.models.EmailConfirmationToken;
+import www.aaltogetherbackend.models.PasswordResetToken;
 import www.aaltogetherbackend.models.RefreshToken;
 import www.aaltogetherbackend.models.User;
-import www.aaltogetherbackend.payloads.requests.LoginRequest;
-import www.aaltogetherbackend.payloads.requests.RefreshTokenRequest;
-import www.aaltogetherbackend.payloads.requests.SignupRequest;
+import www.aaltogetherbackend.payloads.requests.*;
 import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.LoginResponse;
 import www.aaltogetherbackend.payloads.responses.MessageResponse;
@@ -35,8 +34,9 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final MailService mailService;
     private final EmailConfirmationTokenService emailConfirmationTokenService;
+    private final PasswordResetTokenService passwordResetTokenService;
 
-    public AuthController(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager, PasswordEncoder encoder, RefreshTokenService refreshTokenService, MailService mailService, EmailConfirmationTokenService emailConfirmationTokenService) {
+    public AuthController(UserRepository userRepository, JwtUtils jwtUtils, AuthenticationManager authenticationManager, PasswordEncoder encoder, RefreshTokenService refreshTokenService, MailService mailService, EmailConfirmationTokenService emailConfirmationTokenService, PasswordResetTokenService passwordResetTokenService) {
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
@@ -44,6 +44,7 @@ public class AuthController {
         this.refreshTokenService = refreshTokenService;
         this.mailService = mailService;
         this.emailConfirmationTokenService = emailConfirmationTokenService;
+        this.passwordResetTokenService = passwordResetTokenService;
     }
 
     @Value("${FRONTEND_PORT}")
@@ -83,7 +84,8 @@ public class AuthController {
 
         String token = emailConfirmationTokenService.generateEmailVerificationToken(user);
 
-        mailService.SendMail(signupRequest.email(), "Email Verification", "Click here to verify your email: http://localhost:" + frontPort + "/api/auth/verify-email?token=" + token);
+        String link = "http://localhost:" + frontPort + "/api/auth/verify-email?token=" + token;
+        mailService.SendMail(signupRequest.email(), "Email Verification", "<a href=\"" + link + "\">Click here to verify your email</a>");
         return ResponseEntity.ok().body(new MessageResponse("User registered successfully!"));
     }
 
@@ -130,25 +132,37 @@ public class AuthController {
         return ResponseEntity.ok().body(new MessageResponse("Email verified!"));
     }
 
-    /*
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody String email) {
-        User user = userRepository.findByEmail(email);
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        User user = userRepository.findUserByEmail(forgotPasswordRequest.email());
         if (user == null) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("User not found!"));
         }
-        String token = UUID.randomUUID().toString();
-        userRepository.save(user);
-        mailService.SendMail("test@example.com", "Password Reset", "Click here to reset your password: http://localhost:8080/api/auth/reset-password?token=" + token);
-        return ResponseEntity.ok().body(new MessageResponse("Password reset email sent!"));
+        passwordResetTokenService.deleteByUser(user);
+        String token = passwordResetTokenService.generatePasswordResetToken(user);
+
+        String link = "http://localhost:" + frontPort + "/api/auth/reset-password?token=" + token;
+        mailService.SendMail(user.getEmail(), "Password Reset", "<a href=\"" + link + "\">Click here to reset your password</a>");
+        return ResponseEntity.ok().body(new MessageResponse("Password reset email sent! Link is valid for 15 minutes."));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestParam String token, @Valid @RequestBody String password) {
-        User user = userRepository.findByEmailVerificationToken(token);
-        user.setPassword(encoder.encode(password));
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        String token = resetPasswordRequest.token();
+        String newPassword = resetPasswordRequest.password();
+
+        Optional<PasswordResetToken> passwordResetToken = passwordResetTokenService.findByToken(token);
+        if (passwordResetToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Invalid token!"));
+        }
+        if (passwordResetTokenService.isExpired(token)) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Token has expired!"));
+        }
+
+        User user = passwordResetToken.get().getUser();
+        user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
-        return ResponseEntity.ok().body(new MessageResponse("Password reset successfully!"));
+        passwordResetTokenService.delete(token);
+        return ResponseEntity.ok().body(new MessageResponse("Password has been reset successfully!"));
     }
-    */
 }

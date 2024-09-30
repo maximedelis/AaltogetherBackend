@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmail(String email);
 
-    User findByEmail(String email);
+    User findUserByEmail(String email);
 
     @Query("SELECT u.username as username, u.email as email FROM User u WHERE u.username = :username")
     UserInfoInterface findUserInfoByUsername(String username);
