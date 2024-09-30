@@ -2,6 +2,7 @@ package www.aaltogetherbackend.payloads.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public record RoomInfoResponse(
         @JsonProperty("maxUsers")
         int maxUsers,
         String host,
+        Instant createdAt,
         Set<String> connectedUsers,
         Set<FileNoDataInterface> sharedFiles
 ) {}

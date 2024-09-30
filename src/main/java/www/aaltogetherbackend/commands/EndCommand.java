@@ -17,7 +17,6 @@ public class EndCommand implements Command {
 
     @Override
     public void execute(UUID room, String value, SocketIOClient senderClient) {
-        service.sendCommand(room, senderClient, CommandType.END, "");
         service.endSession(room, senderClient);
     }
 }

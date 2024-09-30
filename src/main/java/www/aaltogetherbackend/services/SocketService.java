@@ -100,6 +100,7 @@ public class SocketService {
         }
 
         for (SocketIOClient clients : client.getNamespace().getRoomOperations(room.toString()).getClients()) {
+            clients.sendEvent("end_session", "The host has ended the session");
             clients.disconnect();
         }
         if (roomService.checkExistsById(room)) {
@@ -114,6 +115,7 @@ public class SocketService {
                 UUID clientId = jwtUtils.getIdFromToken(clients.getHandshakeData().getSingleUrlParam("jwt"));
                 String clientUsername = userService.loadById(clientId).getUsername();
                 if (clientUsername.equals(username)) {
+                    clients.sendEvent("error", "You have been kicked from the room");
                     clients.disconnect();
                     this.sendServerMessage(roomId, client, "User " + username + " has been kicked");
                 }

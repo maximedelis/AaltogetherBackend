@@ -1,5 +1,6 @@
 package www.aaltogetherbackend.payloads.responses;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public interface RoomInfoInterface {
@@ -12,4 +13,5 @@ public interface RoomInfoInterface {
     boolean areCommandsEnabled();
     int getMaxUsers();
     String getHost();
+    Instant getCreatedAt();
 }
