@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class Room {
     private boolean aprivate;
     private boolean isFileSharingEnabled;
     private boolean isChatEnabled;
+    private boolean areCommandsEnabled;
 
     @Column(nullable = true, unique = true)
     private String code;
@@ -39,13 +41,11 @@ public class Room {
     @JoinTable(name = "shared_files", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "file_id"))
     private Set<File> sharedFiles = new HashSet<>();
 
-    public Set<File> getSharedFiles() {
-        return sharedFiles;
-    }
+    @Column(nullable = false)
+    private Instant createdAt;
 
-    public void setSharedFiles(Set<File> sharedFiles) {
-        this.sharedFiles = sharedFiles;
-    }
+    @Column(nullable = false)
+    private Instant updatedAt;
 
     public void addSharedFile(File file) {
         this.sharedFiles.add(file);
@@ -116,5 +116,29 @@ public class Room {
 
     public void setChatEnabled(boolean chatEnabled) {
         isChatEnabled = chatEnabled;
+    }
+
+    public boolean areCommandsEnabled() {
+        return areCommandsEnabled;
+    }
+
+    public void setAreCommandsEnabled(boolean areCommandsEnabled) {
+        this.areCommandsEnabled = areCommandsEnabled;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

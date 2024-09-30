@@ -9,6 +9,7 @@ public interface RoomInfoInterface {
     boolean isPrivate();
     boolean isFileSharingEnabled();
     boolean isChatEnabled();
+    boolean areCommandsEnabled();
     int getMaxUsers();
     String getHost();
 }

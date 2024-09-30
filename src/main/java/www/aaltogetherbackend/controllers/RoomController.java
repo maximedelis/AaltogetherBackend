@@ -15,6 +15,7 @@ import www.aaltogetherbackend.payloads.responses.ErrorMessageResponse;
 import www.aaltogetherbackend.payloads.responses.RoomInfoResponse;
 import www.aaltogetherbackend.services.RoomService;
 
+import java.time.Instant;
 import java.util.Random;
 import java.util.Set;
 
@@ -41,7 +42,13 @@ public class RoomController {
         room.setHost(user);
         room.setFileSharingEnabled(createRoomRequest.isFileSharingEnabled());
         room.setChatEnabled(createRoomRequest.isChatEnabled());
+        room.setAreCommandsEnabled(createRoomRequest.areCommandsEnabled());
         room.setMaxUsers(createRoomRequest.maxUsers());
+
+        Instant now = Instant.now();
+        room.setCreatedAt(now);
+        room.setUpdatedAt(now);
+
         if (createRoomRequest.aprivate()) {
             Random random = new Random();
             int code = 100000 + random.nextInt(900000);
@@ -86,7 +93,12 @@ public class RoomController {
 
         room.setFileSharingEnabled(updateRoomRequest.isFileSharingEnabled());
         room.setChatEnabled(updateRoomRequest.isChatEnabled());
+        room.setAreCommandsEnabled(updateRoomRequest.areCommandsEnabled());
         room.setMaxUsers(updateRoomRequest.maxUsers());
+
+        Instant now = Instant.now();
+        room.setUpdatedAt(now);
+
         roomService.saveRoom(room);
 
         socketModule.sendRoomUpdateInfo(room.getId());

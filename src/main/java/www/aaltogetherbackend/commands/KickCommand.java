@@ -17,7 +17,6 @@ public class KickCommand implements Command {
 
     @Override
     public void execute(UUID room, String value, SocketIOClient senderClient) {
-        service.sendCommand(room, senderClient, CommandType.KICK, value);
         service.kickUser(room, senderClient, value);
     }
 }

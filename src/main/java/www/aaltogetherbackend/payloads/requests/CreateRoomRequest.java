@@ -20,5 +20,8 @@ public record CreateRoomRequest(
         Boolean isFileSharingEnabled,
         @NotNull(message = "Chat cannot be null")
         @JsonProperty("chatEnabled")
-        Boolean isChatEnabled
+        Boolean isChatEnabled,
+        @NotNull(message = "Commands cannot be null")
+        @JsonProperty("commandsEnabled")
+        Boolean areCommandsEnabled
 ) {}

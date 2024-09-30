@@ -28,6 +28,15 @@ public class SocketService {
         if (this.notInRoom(room, senderClient)) {
             return;
         }
+
+        UUID clientId = jwtUtils.getIdFromToken(senderClient.getHandshakeData().getSingleUrlParam("jwt"));
+
+        if (!roomService.areCommandsEnabled(room) && !roomService.isHost(room, clientId)) {
+            log.info("Client[{}] - Commands are disabled", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "Commands are disabled");
+            return;
+        }
+
         log.info("Command sent: {}", command);
         for (
                 SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
@@ -42,9 +51,9 @@ public class SocketService {
             return;
         }
 
-        UUID id = jwtUtils.getIdFromToken(senderClient.getHandshakeData().getSingleUrlParam("jwt"));
+        UUID clientId = jwtUtils.getIdFromToken(senderClient.getHandshakeData().getSingleUrlParam("jwt"));
 
-        if (!roomService.isChatEnabled(room) && !roomService.isHost(room, id)) {
+        if (!roomService.isChatEnabled(room) && !roomService.isHost(room, clientId)) {
             log.info("Client[{}] - Chat is disabled", senderClient.getSessionId().toString());
             senderClient.sendEvent("error", "Chat is disabled");
             return;
@@ -53,7 +62,7 @@ public class SocketService {
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {
-            clients.sendEvent("get_message", new SocketMessage(userService.loadById(id).getUsername() + ": " + message));
+            clients.sendEvent("get_message", new SocketMessage(userService.loadById(clientId).getUsername() + ": " + message));
         }
     }
 
@@ -106,6 +115,7 @@ public class SocketService {
                 String clientUsername = userService.loadById(clientId).getUsername();
                 if (clientUsername.equals(username)) {
                     clients.disconnect();
+                    this.sendServerMessage(roomId, client, "User " + username + " has been kicked");
                 }
             }
         }
