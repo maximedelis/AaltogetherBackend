@@ -21,14 +21,10 @@
         reconnection: false
     });
 
-    let isConnected = false;
 
     function connectSocket() {
-        if (!isConnected) {
-            ws.connect();
-            isConnected = true;
-            joinRoom();
-        }
+        ws.connect();
+        joinRoom();
     }
 
     function sendCommand(command, value) {
