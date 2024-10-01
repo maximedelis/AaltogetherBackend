@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.commands.CommandType;
 import www.aaltogetherbackend.commands.SocketCommand;
 import www.aaltogetherbackend.commands.SocketMessage;
+import www.aaltogetherbackend.models.RoomQueue;
 
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class SocketService {
@@ -17,11 +18,13 @@ public class SocketService {
     private final RoomService roomService;
     private final JwtUtils jwtUtils;
     private final UserService userService;
+    private final Map<UUID, RoomQueue> roomQueues;
 
     public SocketService(RoomService roomService, JwtUtils jwtUtils, UserService userService) {
         this.roomService = roomService;
         this.jwtUtils = jwtUtils;
         this.userService = userService;
+        this.roomQueues = new HashMap<>();
     }
 
     public void sendCommand(UUID room, SocketIOClient senderClient, CommandType command, String commandValue) {
@@ -123,7 +126,7 @@ public class SocketService {
         }
     }
 
-    public boolean notInRoom(UUID room, SocketIOClient senderClient) {
+    private boolean notInRoom(UUID room, SocketIOClient senderClient) {
         if (!senderClient.getNamespace().getRoomOperations(room.toString()).getClients().contains(senderClient)) {
             log.info("Client[{}] - Not in room", senderClient.getSessionId().toString());
             senderClient.sendEvent("error", "You are not in the room");
@@ -131,6 +134,75 @@ public class SocketService {
             return true;
         }
         return false;
+    }
+
+    public void addToQueue(UUID room, SocketIOClient senderClient, String value) {
+        if (this.notInRoom(room, senderClient)) {
+            return;
+        }
+
+        UUID clientId = jwtUtils.getIdFromToken(senderClient.getHandshakeData().getSingleUrlParam("jwt"));
+
+        if (!roomService.areCommandsEnabled(room) && !roomService.isHost(room, clientId)) {
+            log.info("Client[{}] - Not host", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "Commands are disabled");
+            return;
+        }
+
+        long fileId = Long.parseLong(value);
+
+        if (!roomService.isFileShared(room, fileId)) {
+            log.info("Client[{}] - File not shared", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "File not shared");
+            return;
+        }
+
+        this.handleAddFileToQueue(room, fileId);
+
+        Queue<Long> fileQueue = this.getSongQueue(room);
+        for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
+            clients.sendEvent("get_queue", fileQueue);
+        }
+
+        log.info("Client[{}] - Added file to queue", senderClient.getSessionId().toString());
+    }
+
+    public Queue<Long> getSongQueue(UUID roomId) {
+        RoomQueue roomQueue = roomQueues.get(roomId);
+        if (roomQueue != null) {
+            return roomQueue.getFileQueue();
+        }
+        return new LinkedList<>();
+    }
+
+    public void skipFile(UUID room, SocketIOClient senderClient) {
+        if (this.notInRoom(room, senderClient)) {
+            return;
+        }
+
+        UUID clientId = jwtUtils.getIdFromToken(senderClient.getHandshakeData().getSingleUrlParam("jwt"));
+
+        if (!roomService.areCommandsEnabled(room) && !roomService.isHost(room, clientId)) {
+            log.info("Client[{}] - Not host", senderClient.getSessionId().toString());
+            senderClient.sendEvent("error", "Commands are disabled");
+            return;
+        }
+
+        RoomQueue roomQueue = roomQueues.get(room);
+        if (roomQueue != null) {
+            roomQueue.getNextFile();
+        }
+        log.info("Client[{}] - Skipped file", senderClient.getSessionId().toString());
+        Queue<Long> fileQueue = this.getSongQueue(room);
+        for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
+            clients.sendEvent("get_queue", fileQueue);
+        }
+    }
+
+    private void handleAddFileToQueue(UUID roomUUID, Long fileId) {
+        RoomQueue roomQueue = roomQueues.computeIfAbsent(roomUUID, RoomQueue::new);
+        roomQueue.addFileToQueue(fileId);
+        log.info("File added to queue in room {}: {}", roomUUID, fileId);
     }
 
 }

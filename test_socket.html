@@ -9,8 +9,8 @@
 <script>
     const chat = document.getElementById('chat');
     const hostIp = "127.0.0.1";
-    const roomUUID = "5a277407-a8b1-4d86-8af9-3785ee33a872";
-    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWQiOiI4NmRiMjc4My02MDk1LTRmZDgtYjBlYi03NmNhNzcwZWViODIiLCJpYXQiOjE3Mjc3ODExNzAsImV4cCI6MTcyNzc4NDc3MH0.0DMpLNo_nw_6qVLVXVLxCPy-1IRAhMqplX6wfR7RsgQ";
+    const roomUUID = "8e7c4a3a-5d55-419b-a133-f2eaf6cd1e52";
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiIsImlkIjoiYjM1NzVmMzQtNTE5MC00ZmYzLThmZWEtOTllZDFiZWVjNjU4IiwiaWF0IjoxNzI3ODAxOTQ1LCJleHAiOjE3Mjc4MDU1NDV9.hJ48Pcr5d3cA3biUoxh5NYQbBJxdTzZwN-bJ__-w1Zc";
 
     const ws = io('http://' + hostIp +':8085', {
         autoConnect: false,
@@ -64,6 +64,10 @@
     });
 
     ws.on('room_info', function (data) {
+        console.log(data);
+    });
+
+    ws.on('get_queue', function (data) {
         console.log(data);
     });
 

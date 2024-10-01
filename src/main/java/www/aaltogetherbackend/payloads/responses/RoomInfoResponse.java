@@ -21,7 +21,7 @@ public record RoomInfoResponse(
         @JsonProperty("maxUsers")
         int maxUsers,
         String host,
-        Instant createdAt,
+        String createdAt,
         Set<String> connectedUsers,
         Set<FileNoDataInterface> sharedFiles
 ) {}

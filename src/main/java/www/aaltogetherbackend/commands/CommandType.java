@@ -8,7 +8,9 @@ public enum CommandType {
     SYNC(CommandType.SYNC_BEAN_NAME),
     OPEN(CommandType.OPEN_BEAN_NAME),
     KICK(CommandType.KICK_BEAN_NAME),
-    END(CommandType.END_BEAN_NAME);
+    END(CommandType.END_BEAN_NAME),
+    ADD_TO_QUEUE(CommandType.ADD_TO_QUEUE_BEAN_NAME),
+    SKIP(CommandType.SKIP_BEAN_NAME);
 
     public static final String PLAY_BEAN_NAME = "playHandler";
     public static final String PAUSE_BEAN_NAME = "pauseHandler";
@@ -18,6 +20,8 @@ public enum CommandType {
     public static final String OPEN_BEAN_NAME = "openHandler";
     public static final String KICK_BEAN_NAME = "kickHandler";
     public static final String END_BEAN_NAME = "endHandler";
+    public static final String ADD_TO_QUEUE_BEAN_NAME = "addToQueueHandler";
+    public static final String SKIP_BEAN_NAME = "skipHandler";
 
     private final String beanName;
     CommandType(String beanName) { this.beanName = beanName; }

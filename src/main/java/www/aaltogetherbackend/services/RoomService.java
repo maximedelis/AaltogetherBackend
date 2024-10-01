@@ -38,7 +38,16 @@ public class RoomService {
             return null;
         }
         Set<FileNoDataInterface> sharedFiles = roomRepository.findAllSharedFilesById(room.getId());
-        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.isFileSharingEnabled(), room.isChatEnabled(), room.areCommandsEnabled(), room.getMaxUsers(), room.getHost().getUsername(), room.getCreatedAt(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
+        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.isFileSharingEnabled(), room.isChatEnabled(), room.areCommandsEnabled(), room.getMaxUsers(), room.getHost().getUsername(), room.getCreatedAt().toString(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
+    }
+
+    public RoomInfoResponse getRoomInfoResponseNoFile(UUID id, SocketModule socketModule) {
+        Room room = roomRepository.findById(id).orElse(null);
+        if (room == null) {
+            return null;
+        }
+        Set<FileNoDataInterface> sharedFiles = null;
+        return new RoomInfoResponse(room.getId(), room.getName(), room.getCode(), room.isAprivate(), room.isFileSharingEnabled(), room.isChatEnabled(), room.areCommandsEnabled(), room.getMaxUsers(), room.getHost().getUsername(), room.getCreatedAt().toString(), socketModule.getUsersInRoom(room.getId()), sharedFiles);
     }
 
     public void saveRoom(Room room) {
@@ -57,7 +66,7 @@ public class RoomService {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<RoomInfoInterface> publicRooms = roomRepository.findAllByAprivateFalse();
         for (RoomInfoInterface room : publicRooms) {
-            rooms.add(this.getRoomInfoResponse(room.getId(), socketModule));
+            rooms.add(this.getRoomInfoResponseNoFile(room.getId(), socketModule));
         }
         return rooms;
     }
@@ -66,7 +75,7 @@ public class RoomService {
         Set<RoomInfoResponse> rooms = new HashSet<>();
         Set<RoomInfoInterface> userRooms = roomRepository.findAllByHost(user);
         for (RoomInfoInterface room : userRooms) {
-            rooms.add(this.getRoomInfoResponse(room.getId(), socketModule));
+            rooms.add(this.getRoomInfoResponseNoFile(room.getId(), socketModule));
         }
         return rooms;
     }
