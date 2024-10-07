@@ -111,7 +111,7 @@ public class SocketModule {
 
             client.joinRoom(data.room().toString());
             client.sendEvent("room_info", roomService.getRoomInfoResponse(data.room(), this));
-            socketService.sendServerMessage(data.room(), client, username + " has joined the room.");
+            socketService.sendServerMessage(data.room(), client, "JOINED", username);
             log.info("Socket ID[{}] - room[{}]  Joined room", client.getSessionId().toString(), data.room());
         };
     }
@@ -123,7 +123,7 @@ public class SocketModule {
             String username = userService.loadById(id).getUsername();
 
             if (!this.isInRoom(roomUUID, username)) {
-                socketService.sendServerMessage(roomUUID, client, username + " has left the room.");
+                socketService.sendServerMessage(roomUUID, client, "LEFT", username);
             }
 
             socketService.deleteRoomIfEmpty(roomUUID, client);

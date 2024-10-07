@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import www.aaltogetherbackend.commands.CommandType;
 import www.aaltogetherbackend.commands.SocketCommand;
+import www.aaltogetherbackend.commands.SocketGetMessage;
 import www.aaltogetherbackend.commands.SocketMessage;
 import www.aaltogetherbackend.models.RoomQueue;
 
@@ -65,15 +66,15 @@ public class SocketService {
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {
-            clients.sendEvent("get_message", new SocketMessage(userService.loadById(clientId).getUsername() + ": " + message));
+            clients.sendEvent("get_message", new SocketGetMessage(userService.loadById(clientId).getUsername(), message));
         }
     }
 
-    public void sendServerMessage(UUID room, SocketIOClient senderClient, String message) {
+    public void sendServerMessage(UUID room, SocketIOClient senderClient, String message, String username) {
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {
-            clients.sendEvent("get_message", new SocketMessage(message));
+            clients.sendEvent("get_info", new SocketGetMessage(username, message));
         }
     }
 
@@ -120,7 +121,7 @@ public class SocketService {
                 if (clientUsername.equals(username)) {
                     clients.sendEvent("error", "You have been kicked from the room");
                     clients.disconnect();
-                    this.sendServerMessage(roomId, client, "User " + username + " has been kicked");
+                    this.sendServerMessage(roomId, client, "KICKED", username);
                 }
             }
         }
