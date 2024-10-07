@@ -4,10 +4,7 @@ import com.corundumstudio.socketio.SocketIOClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import www.aaltogetherbackend.commands.CommandType;
-import www.aaltogetherbackend.commands.SocketCommand;
-import www.aaltogetherbackend.commands.SocketGetMessage;
-import www.aaltogetherbackend.commands.SocketMessage;
+import www.aaltogetherbackend.commands.*;
 import www.aaltogetherbackend.models.RoomQueue;
 
 import java.util.*;
@@ -74,7 +71,7 @@ public class SocketService {
         log.info("Message sent: {}", message);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients())
         {
-            clients.sendEvent("get_info", new SocketGetMessage(username, message));
+            clients.sendEvent("get_info", new SocketGetInfo(username, message));
         }
     }
 
