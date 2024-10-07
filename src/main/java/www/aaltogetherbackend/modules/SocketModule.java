@@ -111,6 +111,7 @@ public class SocketModule {
 
             client.joinRoom(data.room().toString());
             client.sendEvent("room_info", roomService.getRoomInfoResponse(data.room(), this));
+            client.sendEvent("get_queue", socketService.getQueue(data.room()));
             socketService.sendServerMessage(data.room(), client, "JOINED", username);
             log.info("Socket ID[{}] - room[{}]  Joined room", client.getSessionId().toString(), data.room());
         };

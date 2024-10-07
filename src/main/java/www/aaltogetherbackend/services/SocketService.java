@@ -157,7 +157,7 @@ public class SocketService {
 
         this.handleAddFileToQueue(room, fileId);
 
-        Queue<Long> fileQueue = this.getSongQueue(room);
+        Queue<Long> fileQueue = this.getQueue(room);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
             clients.sendEvent("get_queue", fileQueue);
         }
@@ -165,7 +165,7 @@ public class SocketService {
         log.info("Client[{}] - Added file to queue", senderClient.getSessionId().toString());
     }
 
-    public Queue<Long> getSongQueue(UUID roomId) {
+    public Queue<Long> getQueue(UUID roomId) {
         RoomQueue roomQueue = roomQueues.get(roomId);
         if (roomQueue != null) {
             return roomQueue.getFileQueue();
@@ -191,7 +191,7 @@ public class SocketService {
             roomQueue.getNextFile();
         }
         log.info("Client[{}] - Skipped file", senderClient.getSessionId().toString());
-        Queue<Long> fileQueue = this.getSongQueue(room);
+        Queue<Long> fileQueue = this.getQueue(room);
         for (SocketIOClient clients : senderClient.getNamespace().getRoomOperations(room.toString()).getClients()) {
             clients.sendEvent("get_queue", fileQueue);
         }
