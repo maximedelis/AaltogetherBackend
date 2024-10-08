@@ -109,16 +109,6 @@ public class AuthController {
         return ResponseEntity.ok().body(new LoginResponse("Token refreshed!", jwt, refreshTokenRequest.refreshToken(), userRepository.findUserInfoByUsername(username)));
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<?> logout() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
-
-        refreshTokenService.deleteByUser(user);
-
-        return ResponseEntity.ok().body(new MessageResponse("You've been signed out!"));
-    }
-
     @GetMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@Valid @RequestParam String token) {
         Optional<EmailConfirmationToken> emailConfirmationToken = emailConfirmationTokenService.findByToken(token);

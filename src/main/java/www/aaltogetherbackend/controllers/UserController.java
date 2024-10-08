@@ -17,6 +17,7 @@ import www.aaltogetherbackend.repositories.UserRepository;
 import www.aaltogetherbackend.services.EmailConfirmationTokenService;
 import www.aaltogetherbackend.services.JwtUtils;
 import www.aaltogetherbackend.services.MailService;
+import www.aaltogetherbackend.services.RefreshTokenService;
 
 @RestController
 @RequestMapping("/api/user")
@@ -27,13 +28,15 @@ public class UserController {
     private final JwtUtils jwtUtils;
     private final EmailConfirmationTokenService emailConfirmationTokenService;
     private final MailService mailService;
+    private final RefreshTokenService refreshTokenService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailConfirmationTokenService emailConfirmationTokenService, MailService mailService) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, EmailConfirmationTokenService emailConfirmationTokenService, MailService mailService, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.emailConfirmationTokenService = emailConfirmationTokenService;
         this.mailService = mailService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Value("${FRONTEND_PORT}")
@@ -86,6 +89,16 @@ public class UserController {
         String jwt = jwtUtils.generateToken(user.getUsername(), user.getId());
 
         return ResponseEntity.ok().body(new LoginResponse("User updated successfully", jwt, null, userRepository.findUserInfoByUsername(updateUserRequest.username())));
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        refreshTokenService.deleteByUser(user);
+
+        return ResponseEntity.ok().body(new MessageResponse("You've been signed out!"));
     }
 
 }
