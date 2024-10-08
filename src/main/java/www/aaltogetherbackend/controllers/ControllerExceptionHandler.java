@@ -18,8 +18,8 @@ public class ControllerExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorMessageResponse(message));
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<?> handleAuthenticationExceptions(AuthenticationException ex) {
-//        return ResponseEntity.badRequest().body(new ErrorMessageResponse(ex.getMessage()));
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleAuthenticationExceptions(AuthenticationException ex) {
+        return ResponseEntity.badRequest().body(new ErrorMessageResponse(ex.getMessage()));
+    }
 }
