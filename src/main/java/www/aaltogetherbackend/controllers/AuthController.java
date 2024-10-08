@@ -50,7 +50,7 @@ public class AuthController {
     @Value("${FRONTEND_PORT}")
     private String frontPort;
 
-    @Value("${FRONTEND_IP")
+    @Value("${FRONTEND_IP}")
     private String frontIp;
 
     @PostMapping("/login")
