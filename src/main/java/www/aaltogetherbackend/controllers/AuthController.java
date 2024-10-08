@@ -50,6 +50,9 @@ public class AuthController {
     @Value("${FRONTEND_PORT}")
     private String frontPort;
 
+    @Value("${FRONTEND_IP")
+    private String frontIp;
+
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
@@ -84,7 +87,7 @@ public class AuthController {
 
         String token = emailConfirmationTokenService.generateEmailVerificationToken(user);
 
-        String link = "http://localhost:" + frontPort + "/api/auth/verify-email?token=" + token;
+        String link = "http://" + frontIp + ":" + frontPort + "/verify-email?token=" + token;
         mailService.SendMail(signupRequest.email(), "Email Verification", "<a href=\"" + link + "\">Click here to verify your email</a>");
         return ResponseEntity.ok().body(new MessageResponse("User registered successfully!"));
     }
@@ -141,7 +144,7 @@ public class AuthController {
         passwordResetTokenService.deleteByUser(user);
         String token = passwordResetTokenService.generatePasswordResetToken(user);
 
-        String link = "http://localhost:" + frontPort + "/api/auth/reset-password?token=" + token;
+        String link = "http://" + frontIp + ":" + frontPort + "/reset-password?token=" + token;
         mailService.SendMail(user.getEmail(), "Password Reset", "<a href=\"" + link + "\">Click here to reset your password</a>");
         return ResponseEntity.ok().body(new MessageResponse("Password reset email sent! Link is valid for 15 minutes."));
     }

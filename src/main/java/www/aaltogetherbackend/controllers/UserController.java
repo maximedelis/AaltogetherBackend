@@ -39,6 +39,9 @@ public class UserController {
     @Value("${FRONTEND_PORT}")
     private String frontPort;
 
+    @Value("${FRONTEND_IP}")
+    private String frontIp;
+
     @GetMapping("/me")
     public ResponseEntity<?> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -74,7 +77,8 @@ public class UserController {
             user.setEmailVerified(false);
             user.setEmail(updateUserRequest.email());
             String token = emailConfirmationTokenService.generateEmailVerificationToken(user);
-            mailService.SendMail(updateUserRequest.email(), "Email Verification", "Click here to verify your email: http://localhost:" + frontPort + "/api/auth/verify-email?token=" + token);
+            String link = "http://" + frontIp + ":" + frontPort + "/verify-email?token=" + token;
+            mailService.SendMail(updateUserRequest.email(), "Email Verification", "<a href=\"" + link + "\">Click here to verify your email</a>");
         }
 
         userRepository.save(user);
