@@ -3,15 +3,13 @@ package www.aaltogetherbackend.controllers;
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import www.aaltogetherbackend.exceptions.InvalidMediaFileException;
 import www.aaltogetherbackend.models.User;
 import www.aaltogetherbackend.modules.SocketModule;
 import www.aaltogetherbackend.payloads.requests.PlayRequest;
@@ -48,8 +46,8 @@ public class FileController {
         try {
             Long fileId = fileService.store(file, user);
             return ResponseEntity.ok().body(fileService.getFileNoData(fileId));
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new ErrorMessageResponse("Could not upload file"));
+        } catch (IOException | InvalidMediaFileException e) {
+            return ResponseEntity.badRequest().body(new ErrorMessageResponse(e.getMessage()));
         }
     }
 

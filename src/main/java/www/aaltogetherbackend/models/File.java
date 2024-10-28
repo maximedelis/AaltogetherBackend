@@ -23,14 +23,17 @@ public class File {
     @NotEmpty(message = "File cannot be empty.")
     private byte[] data;
 
+    Long duration;
+
     public File() {
     }
 
-    public File(String name, String type, User uploader, byte[] data) {
+    public File(String name, String type, User uploader, byte[] data, Long duration) {
         this.name = name;
         this.type = type;
         this.uploader = uploader;
         this.data = data;
+        this.duration = duration;
     }
 
     public Long getId() {
@@ -49,20 +52,8 @@ public class File {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public User getUploader() {
         return uploader;
-    }
-
-    public void setUploader(User uploader) {
-        this.uploader = uploader;
     }
 
     @NotEmpty(message = "File cannot be empty.")
@@ -73,4 +64,5 @@ public class File {
     public void setData(@NotEmpty(message = "File cannot be empty.") byte[] data) {
         this.data = data;
     }
+
 }

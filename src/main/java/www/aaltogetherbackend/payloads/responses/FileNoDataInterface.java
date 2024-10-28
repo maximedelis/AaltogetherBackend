@@ -5,4 +5,5 @@ public interface FileNoDataInterface {
     String getName();
     String getType();
     String getUploader();
+    Long getDuration();
 }
