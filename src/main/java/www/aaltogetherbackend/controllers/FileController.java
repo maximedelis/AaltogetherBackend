@@ -87,6 +87,14 @@ public class FileController {
         return ResponseEntity.ok().body(fileService.getFileNoData(id));
     }
 
+    @GetMapping("my-files")
+    public ResponseEntity<?> getMyFiles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        return ResponseEntity.ok().body(fileService.getAllFileNoData(user));
+    }
+
     // User should own the file
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {

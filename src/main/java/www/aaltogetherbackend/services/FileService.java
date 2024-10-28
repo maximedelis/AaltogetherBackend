@@ -11,6 +11,7 @@ import www.aaltogetherbackend.repositories.FileRepository;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class FileService {
@@ -34,6 +35,10 @@ public class FileService {
 
     public FileNoDataInterface getFileNoData(Long id) {
         return fileRepository.findFileNoDataById(id);
+    }
+
+    public Set<FileNoDataInterface> getAllFileNoData(User user) {
+        return fileRepository.findAllFileNoDataByUploader(user);
     }
 
     public File getFileById(Long id) {
