@@ -46,11 +46,11 @@ public class FileController {
         User user = (User) authentication.getPrincipal();
 
         try {
-            fileService.store(file, user);
+            Long fileId = fileService.store(file, user);
+            return ResponseEntity.ok().body(fileService.getFileNoData(fileId));
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(new ErrorMessageResponse("Could not upload file"));
         }
-        return ResponseEntity.ok().body(new MessageResponse("File uploaded successfully"));
     }
 
     @PatchMapping("/update/{id}")
@@ -67,8 +67,7 @@ public class FileController {
         }
 
         fileService.updateFile(id, updateFileRequest.name());
-
-        return ResponseEntity.ok().body(new MessageResponse("File updated successfully"));
+        return ResponseEntity.ok().body(fileService.getFileNoData(id));
     }
 
     @GetMapping("/info/{id}")

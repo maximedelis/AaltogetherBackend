@@ -56,7 +56,6 @@ public class WebSecurityConfig {
                         .requestMatchers(toH2Console()).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/files/play/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/v3/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated())

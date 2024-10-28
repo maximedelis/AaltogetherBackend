@@ -21,11 +21,12 @@ public class FileService {
         this.fileRepository = fileRepository;
     }
 
-    public void store(MultipartFile multipartFile, User uploader) throws IOException {
+    public Long store(MultipartFile multipartFile, User uploader) throws IOException {
         String filename = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         File file = new File(filename, multipartFile.getContentType(), uploader, multipartFile.getBytes());
 
         fileRepository.save(file);
+        return file.getId();
     }
 
     @Transactional
@@ -45,6 +46,7 @@ public class FileService {
         return fileRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void updateFile(Long id, String name) {
         fileRepository.updateNameById(id, name);
     }
