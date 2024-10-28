@@ -87,7 +87,7 @@ public class FileController {
         return ResponseEntity.ok().body(fileService.getFileNoData(id));
     }
 
-    @GetMapping("my-files")
+    @GetMapping("/my-files")
     public ResponseEntity<?> getMyFiles() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
