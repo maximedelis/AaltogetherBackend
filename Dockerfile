@@ -14,8 +14,6 @@ RUN ./gradlew clean bootJar
 # Minimal RE
 FROM amazoncorretto:22-alpine-jdk
 
-RUN apk upgrade --no-cache && \
-apk add --no-cache postgresql-client bash openssl libgcc libstdc++ ncurses-libs
 RUN cd /opt
 
 COPY --from=builder ./build/libs/aaltogether-backend-0.0.1-SNAPSHOT.jar aaltogether-backend.jar
