@@ -150,15 +150,15 @@ public class FileController {
     }
 
     @GetMapping("/play")
-    public ResponseEntity<StreamingResponseBody> streamFile(@RequestParam String roomId,
-                                                            @RequestParam long fileId,
+    public ResponseEntity<StreamingResponseBody> streamFile(@RequestParam String room,
+                                                            @RequestParam long file,
                                                             @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
 
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //        User user = (User) authentication.getPrincipal();
 //        String username = user.getUsername();
 
-        if (!roomService.isFileShared(UUID.fromString(roomId), fileId)) {
+        if (!roomService.isFileShared(UUID.fromString(room), file)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -166,14 +166,14 @@ public class FileController {
 //            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 //        }
 
-        String filePath = "db:" + fileId;
+        String filePath = "db:" + file;
         Resource resource = resourceLoader.getResource(filePath);
 
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
 
-        String contentType = fileService.getContentType(fileId);
+        String contentType = fileService.getContentType(file);
 
         long contentLength = resource.contentLength();
 
