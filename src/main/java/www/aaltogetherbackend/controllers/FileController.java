@@ -154,17 +154,17 @@ public class FileController {
                                                             @RequestParam long file,
                                                             @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
 
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User user = (User) authentication.getPrincipal();
-//        String username = user.getUsername();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        String username = user.getUsername();
 
         if (!roomService.isFileShared(UUID.fromString(room), file)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-//        if (!socketModule.isInRoom(UUID.fromString(roomId), username)) {
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-//        }
+        if (!socketModule.isInRoom(UUID.fromString(room), username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         String filePath = "db:" + file;
         Resource resource = resourceLoader.getResource(filePath);
