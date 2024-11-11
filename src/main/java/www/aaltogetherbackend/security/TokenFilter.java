@@ -35,7 +35,7 @@ public class TokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (path.startsWith("/api/auth") || path.startsWith("/favicon.ico") || path.startsWith("/api/files/play")) {
+        if (path.startsWith("/api/auth") || path.startsWith("/favicon.ico") || path.startsWith("/api/file/play")) {
             filterChain.doFilter(request, response);
             return;
         }
