@@ -21,6 +21,7 @@ import www.aaltogetherbackend.services.RoomService;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/files")
@@ -149,29 +150,30 @@ public class FileController {
     }
 
     @GetMapping("/play")
-    public ResponseEntity<StreamingResponseBody> streamFile(@Valid @RequestBody PlayRequest playRequest,
-                                                             @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
+    public ResponseEntity<StreamingResponseBody> streamFile(@RequestParam UUID roomId,
+                                                            @RequestParam long fileId,
+                                                            @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         String username = user.getUsername();
 
-        if (!roomService.isFileShared(playRequest.roomId(), playRequest.fileId())) {
+        if (!roomService.isFileShared(roomId, fileId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        if (!socketModule.isInRoom(playRequest.roomId(), username)) {
+        if (!socketModule.isInRoom(roomId, username)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        String filePath = "db:" + playRequest.fileId();
+        String filePath = "db:" + fileId;
         Resource resource = resourceLoader.getResource(filePath);
 
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
 
-        String contentType = fileService.getContentType(playRequest.fileId());
+        String contentType = fileService.getContentType(fileId);
 
         long contentLength = resource.contentLength();
 
