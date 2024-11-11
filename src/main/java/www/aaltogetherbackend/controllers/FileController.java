@@ -150,7 +150,7 @@ public class FileController {
     }
 
     @GetMapping("/play")
-    public ResponseEntity<StreamingResponseBody> streamFile(@RequestParam UUID roomId,
+    public ResponseEntity<StreamingResponseBody> streamFile(@RequestParam String roomId,
                                                             @RequestParam long fileId,
                                                             @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
 
@@ -158,11 +158,11 @@ public class FileController {
         User user = (User) authentication.getPrincipal();
         String username = user.getUsername();
 
-        if (!roomService.isFileShared(roomId, fileId)) {
+        if (!roomService.isFileShared(UUID.fromString(roomId), fileId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        if (!socketModule.isInRoom(roomId, username)) {
+        if (!socketModule.isInRoom(UUID.fromString(roomId), username)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
